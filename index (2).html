@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Laboratório - IFCE Maranguape</title>
+    
+    <!-- TAGS DO APLICATIVO (PWA) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#10b981">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+        :root {
+            --primary-color: #10b981; --primary-hover: #059669; --bg-color: #f0fdf4; 
+            --surface-color: #ffffff; --text-main: #111827; --text-muted: #6b7280;
+            --border-color: #e5e7eb; --danger-color: #ef4444; --success-color: #10b981;
+        }
+
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); color: var(--text-main); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; max-width: 1000px; width: 100%; }
+        .card { background: var(--surface-color); border-radius: 12px; padding: 48px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); border: 1px solid rgba(16,185,129,0.1); max-height: 90vh; overflow-y: auto; }
+        .card::-webkit-scrollbar { width: 6px; } .card::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        h1 { font-weight: 600; font-size: 1.7rem; margin-bottom: 8px; } h2 { font-weight: 400; font-size: 1.1rem; margin-top: 0; margin-bottom: 30px; color: var(--text-muted); }
+        .desc { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 16px; }
+
+        button, input, select { width: 100%; padding: 12px 14px; margin: 6px 0; font-size: 0.95rem; border-radius: 8px; border: 1px solid var(--border-color); outline: none; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+        input, select { background: #f9fafb; color: var(--text-main); }
+        input:focus, select:focus { background: var(--surface-color); border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(16,185,129,0.15); }
+        .input-destaque { border: 2px solid var(--primary-color); background: #f0fdf4; font-weight: 500; }
+        button { background-color: var(--primary-color); color: white; font-weight: 600; cursor: pointer; border: none; }
+        button:hover { background-color: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16,185,129,0.2); }
+        .btn-voltar, .btn-secundario { background-color: transparent; color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-voltar:hover, .btn-secundario:hover { background-color: #f3f4f6; }
+        .btn-perigo { background-color: var(--danger-color); color: white; }
+        .btn-perigo:hover { background-color: #dc2626; }
+        
+        /* CSS ESPECIAL PARA A CONTA DE TESTE */
+        .btn-teste { display: none; background-color: #fef08a; border: 1px solid #facc15; color: #854d0e; }
+        .btn-teste:hover { background-color: #fde047; }
+        body.is-test .btn-teste { display: block; }
+        body.is-test .btn-normal-submit { display: none; }
+        body.is-test .esconder-no-teste { display: none !important; }
+
+        .tela { display: none; } .ativa { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin: 30px 0; }
+        .module-card { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; cursor: pointer; text-align: center; transition: all 0.3s ease; }
+        .module-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(16,185,129,0.15); border-color: var(--primary-color); }
+        .module-img { height: 120px; background-position: center; background-size: cover; border-bottom: 1px solid var(--border-color); }
+        .module-title { padding: 16px 10px; font-weight: 600; font-size: 0.95rem; }
+        .botoes-rodape { display: flex; gap: 12px; margin-top: 20px; }
+
+        .registro { background: #f9fafb; padding: 20px; margin: 16px 0; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.95rem; text-align: left; }
+        .registro strong { color: var(--text-main); font-weight: 600; }
+        .status-ok { color: var(--success-color); font-weight: 600; }
+        .info-box { background-color: #e0f2fe; color: #0369a1; padding: 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; border: 1px solid #bae6fd; }
+        hr { border: 0; border-top: 1px solid var(--border-color); margin: 30px 0; }
+        .flex-row { display: flex; gap: 10px; margin-top: 8px; align-items: center; }
+        .col-4 { flex: 1; }
+
+        /* AJUSTE PARA O CELULAR (Responsividade das tabelas de input) */
+        @media (max-width: 600px) {
+            .flex-row { flex-direction: column; gap: 4px; }
+            .col-4 { width: 100%; }
+            .card { padding: 20px; }
+            .botoes-rodape { flex-direction: column; }
+        }
+
+        .resistor-dinamico { position: relative; width: 250px; max-width: 100%; height: 50px; margin: 15px auto; background: #e1c699; border-radius: 8px; border: 1px solid #c8a873; }
+        .resistor-dinamico::before, .resistor-dinamico::after { content: ""; position: absolute; width: 50px; height: 6px; background: #9ca3af; top: 22px; }
+        .resistor-dinamico::before { left: -50px; } .resistor-dinamico::after { right: -50px; }
+        .faixa-dinamica { position: absolute; width: 10%; height: 100%; border: 1px solid rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <div id="inicio" class="tela ativa">
+            <h1>Instituto Federal - Maranguape</h1>
+            <h2>Laboratório de Eletrônica Básica</h2>
+            <div style="max-width: 400px; margin: 0 auto;">
+                <button onclick="mostrarTela('loginProfessor')">Portal do Professor</button>
+                <button class="btn-secundario" onclick="mostrarTela('loginGrupo')">Acesso de Alunos</button>
+            </div>
+        </div>
+
+        <div id="loginProfessor" class="tela">
+            <div style="max-width: 400px; margin: 0 auto;">
+                <h1>Acesso Institucional</h1>
+                <input type="password" id="senhaProfessor" placeholder="Senha de acesso">
+                <button onclick="entrarProfessor()">Autenticar</button>
+                <button onclick="sairConta()" class="btn-voltar">Voltar</button>
+            </div>
+        </div>
+
+        <div id="menuProfessor" class="tela">
+            <h1>Painel de Avaliação (Professor)</h1>
+            <div class="grid-cards" id="gridProf"></div>
+            <hr>
+            <button onclick="sairConta()" class="btn-voltar" style="max-width: 300px; margin: 0 auto; display: block;">Encerrar Sessão</button>
+        </div>
+
+        <div id="listaProfessor" class="tela">
+            <h1 id="tituloListaProfessor">Registros do Laboratório</h1>
+            <div id="listaRegistros"></div>
+            <button onclick="mostrarTela('menuProfessor')" class="btn-voltar" style="max-width: 300px; margin: 20px auto 0; display: block;">Retornar ao Painel</button>
+        </div>
+
+        <div id="loginGrupo" class="tela">
+            <div style="max-width: 400px; margin: 0 auto;">
+                <h1>Acesso da Bancada</h1>
+                <input type="text" id="nomeGrupo" placeholder="Identificação (ex: Grupo A)">
+                <input type="password" id="senhaGrupo" placeholder="Senha do Grupo">
+                <button onclick="entrarGrupo()">Acessar Bancada</button>
+                <button onclick="sairConta()" class="btn-voltar">Voltar</button>
+            </div>
+        </div>
+
+        <div id="escolhaGrupo" class="tela">
+            <h1>Roteiros de Eletrônica Básica</h1>
+            <div class="grid-cards" id="gridAluno"></div>
+            <hr>
+            <div class="botoes-rodape">
+                <button onclick="mostrarResultadosGrupo()" class="btn-secundario">Consultar Relatórios / Notas</button>
+                <button onclick="sairConta()" class="btn-voltar">Sair da Sessão</button>
+            </div>
+        </div>
+
+        <div id="pratica1" class="tela">
+            <h1>Prática 1: Associação de Resistores</h1>
+            <div class="esconder-no-teste">
+                <input type="text" id="infoP1" class="input-destaque" placeholder="Bancada / Data da Prática (Ex: Turma 1 - 25/10)">
+                <h2 style="color:var(--primary-color);">1. Definição dos 5 Resistores</h2><div id="p1_resistores"></div>
+                <h2 style="color:var(--primary-color); margin-top:30px;">2. Associação em Série</h2><div id="p1_serie"></div>
+                <h2 style="color:var(--primary-color); margin-top:30px;">3. Associação em Paralelo</h2><div id="p1_paralelo"></div>
+                <h2 style="color:var(--primary-color); margin-top:30px;">4. Associação Mista</h2><div id="p1_mista"></div>
+            </div>
+            <div class="botoes-rodape">
+                <button onclick="enviarPratica1()" id="btnPratica1" class="btn-normal-submit">Submeter à Nuvem</button>
+                <button onclick="executarTeste(1)" class="btn-teste" id="btnTeste1">🧪 Gerar e Enviar Teste Automaticamente</button>
+                <button onclick="mostrarTela('escolhaGrupo')" class="btn-voltar">Cancelar</button>
+            </div>
+        </div>
+
+        <div id="pratica2" class="tela">
+            <h1>Prática 2: Leis de Kirchhoff</h1>
+            <div class="esconder-no-teste">
+                <input type="text" id="infoP2" class="input-destaque" placeholder="Bancada / Data da Prática (Ex: Turma 1 - 25/10)">
+                <h2 style="color:var(--primary-color);">1. Definição dos 3 Resistores</h2><div id="p2_resistores"></div>
+                <h2 style="color:var(--primary-color); margin-top:30px;">2. Circuito em Série (Fonte: 5V)</h2><div id="p2_serie"></div>
+                <h2 style="color:var(--primary-color); margin-top:30px;">3. Circuito em Paralelo (Fonte: 5V)</h2><div id="p2_paralelo"></div>
+                <h2 style="color:var(--primary-color); margin-top:30px;">4. Circuito Misto - R1 Série c/ (R2//R3) (Fonte: 6.5V)</h2><div id="p2_misto"></div>
+            </div>
+            <div class="botoes-rodape">
+                <button onclick="enviarPratica2()" id="btnPratica2" class="btn-normal-submit">Submeter à Nuvem</button>
+                <button onclick="executarTeste(2)" class="btn-teste" id="btnTeste2">🧪 Gerar e Enviar Teste Automaticamente</button>
+                <button onclick="mostrarTela('escolhaGrupo')" class="btn-voltar">Cancelar</button>
+            </div>
+        </div>
+
+        <div id="pratica3" class="tela">
+            <h1>Prática 3: Divisor de Tensão e Corrente</h1>
+            <div class="esconder-no-teste">
+                <input type="text" id="infoP3" class="input-destaque" placeholder="Bancada / Data da Prática (Ex: Turma 1 - 25/10)">
+                <h2 style="color:var(--primary-color); border-bottom:1px solid #ccc; padding-bottom:5px;">1. Definição dos 3 Resistores</h2><div id="p3_resistores"></div>
+                <h2 style="color:var(--primary-color); border-bottom:1px solid #ccc; padding-bottom:5px; margin-top:30px;">2. Divisor de Tensão (Série)</h2><div id="p3_serie"></div>
+                <h2 style="color:var(--primary-color); border-bottom:1px solid #ccc; padding-bottom:5px; margin-top:30px;">3. Divisor de Corrente (Paralelo)</h2><div id="p3_paralelo"></div>
+            </div>
+            <div class="botoes-rodape">
+                <button onclick="enviarPratica3()" id="btnPratica3" class="btn-normal-submit">Submeter à Nuvem</button>
+                <button onclick="executarTeste(3)" class="btn-teste" id="btnTeste3">🧪 Gerar e Enviar Teste Automaticamente</button>
+                <button onclick="mostrarTela('escolhaGrupo')" class="btn-voltar">Cancelar</button>
+            </div>
+        </div>
+
+        <div id="pratica4" class="tela">
+            <h1>Prática 4: Análise Nodal (Circuito Misto)</h1>
+            <div class="esconder-no-teste">
+                <input type="text" id="infoP4" class="input-destaque" placeholder="Bancada / Data da Prática (Ex: Turma 1 - 25/10)">
+                <div class="info-box"><strong>💡 Instruções:</strong> Preencha as medições. As tensões dos nós (Va e Vb) exigem apenas o valor Nominal.</div>
+                
+                <h2 style="color:var(--primary-color); border-bottom:1px solid #ccc; padding-bottom:5px;">1. Definição dos 4 Resistores</h2>
+                <div id="p4_resistores"></div>
+
+                <h2 style="color:var(--primary-color); border-bottom:1px solid #ccc; padding-bottom:5px; margin-top:30px;">2. Fontes de Tensão</h2>
+                <div id="p4_fontes"></div>
+
+                <h2 style="color:var(--primary-color); border-bottom:1px solid #ccc; padding-bottom:5px; margin-top:30px;">3. Tensões Nodais (Supernó)</h2>
+                <div id="p4_nos"></div>
+
+                <h2 style="color:var(--primary-color); border-bottom:1px solid #ccc; padding-bottom:5px; margin-top:30px;">4. Tensões nos Resistores</h2>
+                <div id="p4_vr"></div>
+
+                <h2 style="color:var(--primary-color); border-bottom:1px solid #ccc; padding-bottom:5px; margin-top:30px;">5. Correntes (mA)</h2>
+                <div id="p4_i"></div>
+            </div>
+            <div class="botoes-rodape">
+                <button onclick="enviarPratica4()" id="btnPratica4" class="btn-normal-submit">Submeter à Nuvem</button>
+                <button onclick="executarTeste(4)" class="btn-teste" id="btnTeste4">🧪 Gerar e Enviar Teste Automaticamente</button>
+                <button onclick="mostrarTela('escolhaGrupo')" class="btn-voltar">Cancelar</button>
+            </div>
+        </div>
+
+        <div id="resultadoGrupo" class="tela">
+            <h1>Suas Avaliações</h1>
+            <div id="listaGrupo"></div>
+            <button onclick="mostrarTela('escolhaGrupo')" class="btn-voltar" style="max-width: 300px; margin: 20px auto 0; display:block;">Retornar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ================= CONFIGURAÇÃO FIREBASE =================
+    const firebaseConfig = {
+      apiKey: "AIzaSyBd8vchRcXzpknvszJikiFhiJz8eIg5nnY",
+      authDomain: "laboratorioif.firebaseapp.com",
+      databaseURL: "https://laboratorioif-default-rtdb.firebaseio.com",
+      projectId: "laboratorioif"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    let grupoAtual = ""; window.dadosProfessor = []; 
+
+    const modulosPraticas = [
+        { id: "Prática 1", titulo: "Prática 1: Associação de Resistores", img: "https://eletroagora.com.br/wp-content/uploads/2024/01/circuito-eletrico-eletroagora.png" },
+        { id: "Prática 2", titulo: "Prática 2: Leis de Kirchhoff", img: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=400&q=80" },
+        { id: "Prática 3", titulo: "Prática 3: Divisor de Tensão e Corrente", img: "https://static.todamateria.com.br/upload/ci/rc/circuito-eletrico-og.jpg?class=ogImageWide" },
+        { id: "Prática 4", titulo: "Prática 4: Análise Nodal", img: "https://www.casadoeletricistars.com.br/fotos/1/287/Blog%20-%20Casa%20do%20Eletricista%20(56)(1).png" }
+    ];
+
+    const dicCores = { "Preto": "black", "Marrom": "#8B4513", "Vermelho": "red", "Laranja": "orange", "Amarelo": "#eab308", "Verde": "#16a34a", "Azul": "#2563eb", "Violeta": "#8b5cf6", "Cinza": "gray", "Branco": "white", "Dourado": "#ca8a04", "Prateado": "silver" };
+    const digitos = { "Preto": 0, "Marrom": 1, "Vermelho": 2, "Laranja": 3, "Amarelo": 4, "Verde": 5, "Azul": 6, "Violeta": 7, "Cinza": 8, "Branco": 9 };
+    const mults = { "Preto": 1, "Marrom": 10, "Vermelho": 100, "Laranja": 1000, "Amarelo": 10000, "Verde": 100000, "Azul": 1000000, "Violeta": 10000000, "Cinza": 100000000, "Branco": 1000000000, "Dourado": 0.1, "Prateado": 0.01 };
+    
+    function preencherSelect(id, obj) { 
+        const s = document.getElementById(id); if(!s) return; s.innerHTML = ''; 
+        for (let cor in obj) { let opt = document.createElement("option"); opt.value = cor; opt.text = cor; s.appendChild(opt); } 
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        let profHtml = ""; let alunoHtml = "";
+        modulosPraticas.forEach(m => {
+            profHtml += `<div class="module-card" onclick="mostrarRegistros('${m.id}')"><div class="module-img" style="background-image: url('${m.img}');"></div><div class="module-title">${m.titulo}</div></div>`;
+            alunoHtml += `<div class="module-card" onclick="abrirAtividade('${m.id}')"><div class="module-img" style="background-image: url('${m.img}');"></div><div class="module-title">${m.titulo}</div></div>`;
+        });
+        document.getElementById("gridProf").innerHTML = profHtml;
+        document.getElementById("gridAluno").innerHTML = alunoHtml;
+
+        // ENTER KEY LISTENERS
+        document.getElementById("senhaProfessor").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") entrarProfessor();
+        });
+        document.getElementById("nomeGrupo").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") entrarGrupo();
+        });
+        document.getElementById("senhaGrupo").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") entrarGrupo();
+        });
+    });
+
+    // ================= FUNÇÃO DE AUTOPREENCHIMENTO PARA TESTE =================
+    function executarTeste(num) {
+        let btn = document.getElementById('btnTeste' + num);
+        let oldText = btn.innerText;
+        btn.innerText = "Processando e Enviando...";
+        btn.disabled = true;
+
+        let tela = document.getElementById('pratica' + num);
+        if (!tela) return;
+        
+        let infoInput = tela.querySelector('.input-destaque');
+        if (infoInput) infoInput.value = "Gerado via Auto Teste - " + new Date().getHours() + "h" + new Date().getMinutes() + "m";
+        
+        let inputs = tela.querySelectorAll('input:not(.input-destaque)');
+        inputs.forEach(inp => {
+            if (inp.id.includes('escala')) inp.value = "20";
+            else if (inp.id.includes('delta')) inp.value = "0";
+            else if (inp.id.includes('tol_aluno')) inp.value = "5";
+            else inp.value = "0"; 
+        });
+
+        let selects = tela.querySelectorAll('select');
+        selects.forEach(sel => {
+            if(sel.id.includes('tipo')) sel.value = "4";
+            else if(sel.id.includes('c1')) sel.value = "Marrom"; 
+            else if(sel.id.includes('c2')) sel.value = "Preto"; 
+            else if(sel.id.includes('mul')) sel.value = "Marrom"; 
+            else if(sel.id.includes('tol')) sel.value = "Dourado"; 
+            sel.dispatchEvent(new Event('change'));
+        });
+
+        let R = 100;
+
+        if (num === 1) {
+            for(let i=1; i<=5; i++) { document.getElementById(`r${i}_nom`).value = R; document.getElementById(`r${i}_med`).value = R; }
+            for(let i=2; i<=5; i++) {
+                document.getElementById(`s${i}_nom`).value = R * i; document.getElementById(`s${i}_med`).value = R * i;
+                document.getElementById(`p${i}_nom`).value = R / i; document.getElementById(`p${i}_med`).value = R / i;
+            }
+            let gabMisto = 1 / ( (1/(R+R)) + (1/(R+R)) + (1/R) );
+            document.getElementById(`m_nom`).value = gabMisto; document.getElementById(`m_med`).value = gabMisto;
+        }
+        else if (num === 2) {
+            for(let i=1; i<=3; i++) { document.getElementById(`p2_r${i}_nom`).value = R; document.getElementById(`p2_r${i}_med`).value = R; }
+            let sReq = R * 3;
+            document.getElementById('p2_s_req_nom').value = sReq; document.getElementById('p2_s_req_med').value = sReq;
+            document.getElementById('p2_s_itotal_nom').value = (5/sReq)*1000; document.getElementById('p2_s_itotal_med').value = (5/sReq)*1000;
+            document.getElementById('p2_s_vtotal_nom').value = 5; document.getElementById('p2_s_vtotal_med').value = 5;
+            for(let i=1; i<=3; i++) { document.getElementById(`p2_s_v${i}_nom`).value = 5/3; document.getElementById(`p2_s_v${i}_med`).value = 5/3; }
+
+            let pReq = R / 3;
+            document.getElementById('p2_p_req_nom').value = pReq; document.getElementById('p2_p_req_med').value = pReq;
+            document.getElementById('p2_p_itotal_nom').value = (5/pReq)*1000; document.getElementById('p2_p_itotal_med').value = (5/pReq)*1000;
+            document.getElementById('p2_p_itotal2_nom').value = (5/pReq)*1000; document.getElementById('p2_p_itotal2_med').value = (5/pReq)*1000;
+            document.getElementById('p2_p_vtotal_nom').value = 5; document.getElementById('p2_p_vtotal_med').value = 5;
+            for(let i=1; i<=3; i++) { document.getElementById(`p2_p_v${i}_nom`).value = 5; document.getElementById(`p2_p_v${i}_med`).value = 5; }
+            document.getElementById('p2_p_i1_nom').value = 50; document.getElementById('p2_p_i1_med').value = 50;
+            document.getElementById('p2_p_i2_nom').value = 50; document.getElementById('p2_p_i2_med').value = 50;
+            document.getElementById('p2_p_i3_nom').value = 50; document.getElementById('p2_p_i3_med').value = 50;
+            document.getElementById('p2_p_i23_nom').value = 100; document.getElementById('p2_p_i23_med').value = 100;
+
+            let mReq = R + R/2;
+            let mItot = (6.5/mReq)*1000;
+            document.getElementById('p2_m_req_nom').value = mReq; document.getElementById('p2_m_req_med').value = mReq;
+            document.getElementById('p2_m_itotal_nom').value = mItot; document.getElementById('p2_m_itotal_med').value = mItot;
+            document.getElementById('p2_m_itotal2_nom').value = mItot; document.getElementById('p2_m_itotal2_med').value = mItot;
+            document.getElementById('p2_m_vtotal_nom').value = 6.5; document.getElementById('p2_m_vtotal_med').value = 6.5;
+            document.getElementById('p2_m_v1_nom').value = (mItot/1000)*R; document.getElementById('p2_m_v1_med').value = (mItot/1000)*R;
+            document.getElementById('p2_m_v2_nom').value = (mItot/1000)*(R/2); document.getElementById('p2_m_v2_med').value = (mItot/1000)*(R/2);
+            document.getElementById('p2_m_v3_nom').value = (mItot/1000)*(R/2); document.getElementById('p2_m_v3_med').value = (mItot/1000)*(R/2);
+            document.getElementById('p2_m_i1_nom').value = mItot; document.getElementById('p2_m_i1_med').value = mItot;
+            document.getElementById('p2_m_i2_nom').value = mItot/2; document.getElementById('p2_m_i2_med').value = mItot/2;
+            document.getElementById('p2_m_i3_nom').value = mItot/2; document.getElementById('p2_m_i3_med').value = mItot/2;
+        }
+        else if (num === 3) {
+            for(let i=1; i<=3; i++) { document.getElementById(`p3_r${i}_nom`).value = R; document.getElementById(`p3_r${i}_med`).value = R; }
+            document.getElementById('p3_s_vtotal_nom').value = 5; document.getElementById('p3_s_vtotal_med').value = 5;
+            for(let i=1; i<=3; i++) { document.getElementById(`p3_s_v${i}_nom`).value = 5/3; document.getElementById(`p3_s_v${i}_med`).value = 5/3; }
+            
+            let iTot_mA = (5/(R/3))*1000;
+            document.getElementById('p3_p_itotal_nom').value = iTot_mA; document.getElementById('p3_p_itotal_med').value = iTot_mA;
+            for(let i=1; i<=3; i++) { document.getElementById(`p3_p_i${i}_nom`).value = 50; document.getElementById(`p3_p_i${i}_med`).value = 50; }
+        }
+        else if (num === 4) {
+            for(let i=1; i<=4; i++) { document.getElementById(`p4_r${i}_nom`).value = R; document.getElementById(`p4_r${i}_med`).value = R; }
+            document.getElementById('p4_e1_nom').value = 5; document.getElementById('p4_e1_med').value = 5;
+            document.getElementById('p4_e2_nom').value = 12; document.getElementById('p4_e2_med').value = 12;
+
+            let invSum = 4/R;
+            let Va = (5/R - 12/R - 12/R) / invSum;
+            let Vb = Va + 12;
+
+            document.getElementById('p4_no_va_nom').value = Va;
+            document.getElementById('p4_no_vb_nom').value = Vb;
+
+            let vr1 = Va - 5; let vr2 = Va; let vr3 = Vb; let vr4 = Vb; 
+            document.getElementById('p4_vr_1_nom').value = vr1; document.getElementById('p4_vr_1_med').value = vr1;
+            document.getElementById('p4_vr_2_nom').value = vr2; document.getElementById('p4_vr_2_med').value = vr2;
+            document.getElementById('p4_vr_3_nom').value = vr3; document.getElementById('p4_vr_3_med').value = vr3;
+            document.getElementById('p4_vr_4_nom').value = vr4; document.getElementById('p4_vr_4_med').value = vr4;
+
+            let i1 = (vr1/R)*1000; let i2 = (vr2/R)*1000; let i3 = -(i1 + i2); 
+            let i5 = (vr3/R)*1000; let i6 = (vr4/R)*1000; let i4 = -(i5 + i6);
+
+            document.getElementById('p4_i_1_nom').value = i1; document.getElementById('p4_i_1_med').value = i1;
+            document.getElementById('p4_i_2_nom').value = i2; document.getElementById('p4_i_2_med').value = i2;
+            document.getElementById('p4_i_3_nom').value = i3; document.getElementById('p4_i_3_med').value = i3;
+            document.getElementById('p4_i_4_nom').value = i4; document.getElementById('p4_i_4_med').value = i4;
+            document.getElementById('p4_i_5_nom').value = i5; document.getElementById('p4_i_5_med').value = i5;
+            document.getElementById('p4_i_6_nom').value = i6; document.getElementById('p4_i_6_med').value = i6;
+        }
+
+        setTimeout(() => {
+            if (num === 1) enviarPratica1();
+            else if (num === 2) enviarPratica2();
+            else if (num === 3) enviarPratica3();
+            else if (num === 4) enviarPratica4();
+            
+            btn.innerText = oldText;
+            btn.disabled = false;
+        }, 800);
+    }
+
+    function parseValue(str) {
+        if (str === undefined || str === null || str === "") return 0;
+        if (typeof str === 'number') return isNaN(str) ? 0 : str;
+        str = str.toString().trim().replace(',', '.');
+        if (str === "") return 0;
+        let mult = 1;
+        if (str.endsWith('micro')) { mult = 1e-6; str = str.slice(0, -5); }
+        else if (str.endsWith('m')) { mult = 1e-3; str = str.slice(0, -1); }
+        else if (str.endsWith('M')) { mult = 1e6; str = str.slice(0, -1); }
+        else if (str.endsWith('k') || str.endsWith('K')) { mult = 1e3; str = str.slice(0, -1); }
+        let val = parseFloat(str) * mult;
+        return isNaN(val) ? 0 : val;
+    }
+
+    function formatEng(val, unit = '') {
+        if (val === 0) return '0 ' + unit; if (isNaN(val) || val === null || val === undefined) return '-';
+        let sign = val < 0 ? '-' : '';
+        let absVal = Math.abs(val);
+        if (absVal >= 1e6) return sign + parseFloat((absVal / 1e6).toFixed(2)) + ' M' + unit;
+        if (absVal >= 1e3) return sign + parseFloat((absVal / 1e3).toFixed(2)) + ' k' + unit;
+        if (absVal >= 1) return sign + parseFloat(absVal.toFixed(2)) + ' ' + unit;
+        if (absVal >= 1e-3) return sign + parseFloat((absVal * 1e3).toFixed(2)) + ' m' + unit;
+        if (absVal >= 1e-6) return sign + parseFloat((absVal * 1e6).toFixed(2)) + ' micro' + unit;
+        return sign + parseFloat(absVal.toFixed(4)) + ' ' + unit;
+    }
+
+    function calcDeltaInterno(nominal, medido) {
+        if (!nominal || nominal === 0) return 0; 
+        return (((Math.abs(medido) - Math.abs(nominal)) / Math.abs(nominal)) * 100);
+    }
+
+    function mostrarTela(id) { document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa")); document.getElementById(id).classList.add("ativa"); }
+    
+    function sairConta() {
+        document.body.classList.remove('is-test');
+        grupoAtual = "";
+        mostrarTela('inicio');
+    }
+
+    function entrarProfessor() {
+        let s = document.getElementById("senhaProfessor");
+        if (s.value === "eletroif") { s.value = ""; mostrarTela("menuProfessor"); } else { alert("Credencial inválida."); }
+    }
+    
+    function entrarGrupo() {
+        let nome = document.getElementById("nomeGrupo").value.trim(), senha = document.getElementById("senhaGrupo").value;
+        if (!nome || !senha) return alert("Preencha as credenciais.");
+
+        if (nome === "testelw" && senha === "54321") {
+            grupoAtual = nome;
+            document.body.classList.add('is-test'); 
+            mostrarTela("escolhaGrupo");
+            return;
+        }
+
+        document.body.classList.remove('is-test'); 
+        let btn = event.target; 
+        let txt = "Autenticando..."; 
+        if(btn && btn.tagName === "BUTTON") { txt = btn.innerText; btn.innerText = "Autenticando..."; btn.disabled = true; }
+        
+        db.ref('gruposIF/' + nome).once('value').then(snap => {
+            let saved = snap.val();
+            if (!saved) { db.ref('gruposIF/' + nome).set(senha); grupoAtual = nome; mostrarTela("escolhaGrupo"); }
+            else if (saved === senha) { grupoAtual = nome; mostrarTela("escolhaGrupo"); }
+            else { alert("Senha incorreta."); }
+            if(btn && btn.tagName === "BUTTON") { btn.innerText = txt; btn.disabled = false; }
+        }).catch(err => { 
+            alert("Erro de conexão."); 
+            if(btn && btn.tagName === "BUTTON") { btn.innerText = txt; btn.disabled = false; } 
+        });
+    }
+
+    function abrirAtividade(idModulo) {
+        if (idModulo === "Prática 1") { document.getElementById("infoP1").value = ""; renderizarPratica1(); mostrarTela('pratica1'); } 
+        else if (idModulo === "Prática 2") { document.getElementById("infoP2").value = ""; renderizarPratica2(); mostrarTela('pratica2'); }
+        else if (idModulo === "Prática 3") { document.getElementById("infoP3").value = ""; renderizarPratica3(); mostrarTela('pratica3'); }
+        else if (idModulo === "Prática 4") { document.getElementById("infoP4").value = ""; renderizarPratica4(); mostrarTela('pratica4'); }
+    }
+
+    // ================= COMPONENTES ATUALIZADOS PARA TECLADO DE CELULAR =================
+    function UI_Row(idPrefix, title) {
+        return `<div class="registro"><strong>${title}</strong>
+            <div class="flex-row"><input class="col-4" type="number" inputmode="decimal" id="${idPrefix}_nom" placeholder="Nominal (Aluno)"><input class="col-4" type="number" inputmode="decimal" id="${idPrefix}_med" placeholder="Medido"></div>
+            <div class="flex-row"><input class="col-4" type="number" inputmode="decimal" id="${idPrefix}_delta" placeholder="Δ (%) Erro"><input class="col-4" type="text" id="${idPrefix}_escala" placeholder="Escala Multímetro"></div></div>`;
+    }
+
+    function UI_Row_OnlyNominal(idPrefix, title) {
+        return `<div class="registro"><strong>${title}</strong>
+            <div class="flex-row"><input class="col-4" type="number" inputmode="decimal" id="${idPrefix}_nom" placeholder="Valor Nominal (Calculado pelo Aluno)"></div></div>`;
+    }
+
+    function renderResistoresUI(qtd, prefix, containerId) {
+        let resHTML = "";
+        for(let i=1; i<=qtd; i++) {
+            resHTML += `<div class="registro"><strong style="color:var(--primary-color);">Resistor R${i}</strong>
+                <div class="resistor-dinamico" id="${prefix}r${i}_visual"><div class="faixa-dinamica" id="${prefix}r${i}_f1" style="left:15%"></div><div class="faixa-dinamica" id="${prefix}r${i}_f2" style="left:30%"></div><div class="faixa-dinamica" id="${prefix}r${i}_f3" style="left:45%; display:none;"></div><div class="faixa-dinamica" id="${prefix}r${i}_f4" style="left:65%"></div><div class="faixa-dinamica" id="${prefix}r${i}_f5" style="left:80%"></div></div>
+                <select id="${prefix}r${i}_tipo" onchange="atualizarCor(${i}, '${prefix}')"><option value="4">Padrão 4 Faixas</option><option value="5">Padrão 5 Faixas</option></select>
+                <div class="flex-row"><select class="col-4" id="${prefix}r${i}_c1" onchange="atualizarCor(${i}, '${prefix}')"></select><select class="col-4" id="${prefix}r${i}_c2" onchange="atualizarCor(${i}, '${prefix}')"></select><select class="col-4" id="${prefix}r${i}_c3" onchange="atualizarCor(${i}, '${prefix}')" style="display:none;"></select></div>
+                <div class="flex-row"><select class="col-4" id="${prefix}r${i}_mul" onchange="atualizarCor(${i}, '${prefix}')"></select><select class="col-4" id="${prefix}r${i}_tol" onchange="atualizarCor(${i}, '${prefix}')"></select></div>
+                <div class="flex-row"><input class="col-4" type="number" inputmode="decimal" id="${prefix}r${i}_nom" placeholder="Nominal (Aluno)"><input class="col-4" type="number" inputmode="decimal" id="${prefix}r${i}_med" placeholder="Medido"><input class="col-4" type="number" inputmode="decimal" id="${prefix}r${i}_tol_aluno" placeholder="Tol Lida (%)"></div>
+                <div class="flex-row"><input class="col-4" type="number" inputmode="decimal" id="${prefix}r${i}_delta" placeholder="ΔR (%)"><input class="col-4" type="text" id="${prefix}r${i}_escala" placeholder="Escala"></div></div>`;
+        }
+        document.getElementById(containerId).innerHTML = resHTML;
+        for(let i=1; i<=qtd; i++) {
+            preencherSelect(`${prefix}r${i}_c1`, digitos); preencherSelect(`${prefix}r${i}_c2`, digitos); preencherSelect(`${prefix}r${i}_c3`, digitos);
+            preencherSelect(`${prefix}r${i}_mul`, mults);
+            preencherSelect(`${prefix}r${i}_tol`, { "Marrom":"±1%", "Vermelho":"±2%", "Verde":"±0.5%", "Azul":"±0.25%", "Violeta":"±0.1%", "Cinza":"±0.05%", "Dourado":"±5%", "Prateado":"±10%" });
+            atualizarCor(i, prefix);
+        }
+    }
+
+    function atualizarCor(i, prefix) {
+        let t = document.getElementById(`${prefix}r${i}_tipo`).value;
+        document.getElementById(`${prefix}r${i}_f1`).style.background = dicCores[document.getElementById(`${prefix}r${i}_c1`).value];
+        document.getElementById(`${prefix}r${i}_f2`).style.background = dicCores[document.getElementById(`${prefix}r${i}_c2`).value];
+        if(t === "5") {
+            document.getElementById(`${prefix}r${i}_f3`).style.display = "block"; document.getElementById(`${prefix}r${i}_c3`).style.display = "block";
+            document.getElementById(`${prefix}r${i}_f3`).style.background = dicCores[document.getElementById(`${prefix}r${i}_c3`).value];
+        } else {
+            document.getElementById(`${prefix}r${i}_f3`).style.display = "none"; document.getElementById(`${prefix}r${i}_c3`).style.display = "none";
+        }
+        document.getElementById(`${prefix}r${i}_f4`).style.background = dicCores[document.getElementById(`${prefix}r${i}_mul`).value];
+        document.getElementById(`${prefix}r${i}_f5`).style.background = dicCores[document.getElementById(`${prefix}r${i}_tol`).value];
+    }
+
+    function getVal(id) { return parseValue(document.getElementById(id).value); }
+    function getStr(id) { return document.getElementById(id).value || ""; }
+
+    function renderizarPratica1() {
+        renderResistoresUI(5, "", "p1_resistores");
+        let assocS = ""; for(let i=2; i<=5; i++) assocS += UI_Row(`s${i}`, `Req (Série R1 até R${i})`); document.getElementById("p1_serie").innerHTML = assocS;
+        let assocP = ""; for(let i=2; i<=5; i++) assocP += UI_Row(`p${i}`, `Req (Paralelo R1 até R${i})`); document.getElementById("p1_paralelo").innerHTML = assocP;
+        document.getElementById("p1_mista").innerHTML = UI_Row(`m`, `Req Misto (R1//(R2+R3)//(R4+R5))`);
+    }
+
+    function enviarPratica1() {
+        let infoA = document.getElementById("infoP1").value.trim(); if (!infoA) return alert("Preencha a identificação.");
+        let sub = { grupo: grupoAtual, tipo: 'Prática 1', infoAtividade: infoA, divulgado: false, timestamp: firebase.database.ServerValue.TIMESTAMP, resistores: [], serie: [], paralelo: [], mista: {} };
+        let exactNominals = [];
+
+        for(let i=1; i<=5; i++) {
+            let t = document.getElementById(`r${i}_tipo`).value, c1 = document.getElementById(`r${i}_c1`).value, c2 = document.getElementById(`r${i}_c2`).value, c3 = document.getElementById(`r${i}_c3`).value, mul = document.getElementById(`r${i}_mul`).value, tol = document.getElementById(`r${i}_tol`).value;
+            let gabNom = (t === "5") ? (digitos[c1]*100 + digitos[c2]*10 + digitos[c3]) * mults[mul] : (digitos[c1]*10 + digitos[c2]) * mults[mul]; exactNominals.push(gabNom);
+            let medA = getVal(`r${i}_med`);
+            sub.resistores.push({ id: i, t: t, c1: c1, c2: c2, c3: c3, mul: mul, tol: tol, gabNom: gabNom, nomA: getVal(`r${i}_nom`), medA: medA, tolA: getStr(`r${i}_tol_aluno`), deltaA: getVal(`r${i}_delta`), escala: getStr(`r${i}_escala`), gabDelta: calcDeltaInterno(gabNom, medA) });
+        }
+        for(let i=2; i<=5; i++) {
+            let medA = getVal(`s${i}_med`); let gabNom = 0; for(let j=0; j<i; j++) gabNom += exactNominals[j];
+            sub.serie.push({ qtd: i, nomA: getVal(`s${i}_nom`), medA: medA, deltaA: getVal(`s${i}_delta`), escala: getStr(`s${i}_escala`), gabNom: gabNom, gabDelta: calcDeltaInterno(gabNom, medA) });
+        }
+        for(let i=2; i<=5; i++) {
+            let medA = getVal(`p${i}_med`); let inv = 0; for(let j=0; j<i; j++) inv += (1/exactNominals[j]); let gabNom = 1 / inv;
+            sub.paralelo.push({ qtd: i, nomA: getVal(`p${i}_nom`), medA: medA, deltaA: getVal(`p${i}_delta`), escala: getStr(`p${i}_escala`), gabNom: gabNom, gabDelta: calcDeltaInterno(gabNom, medA) });
+        }
+        let m_medA = getVal(`m_med`); let gabMisto = 1 / ( (1/(exactNominals[3]+exactNominals[4])) + (1/(exactNominals[1]+exactNominals[2])) + (1/exactNominals[0]) );
+        sub.mista = { nomA: getVal(`m_nom`), medA: m_medA, deltaA: getVal(`m_delta`), escala: getStr(`m_escala`), gabNom: gabMisto, gabDelta: calcDeltaInterno(gabMisto, m_medA) };
+
+        let btnEl = document.getElementById("btnPratica1");
+        if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
+        db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl){ btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    }
+
+    function renderizarPratica2() {
+        renderResistoresUI(3, "p2_", "p2_resistores");
+        document.getElementById("p2_serie").innerHTML = UI_Row('p2_s_req', 'Req (Série R1+R2+R3)') + UI_Row('p2_s_itotal', 'I Total (mA)') + UI_Row('p2_s_vtotal', 'Tensão Total da Fonte') + UI_Row('p2_s_v1', 'Tensão V1 (sobre R1)') + UI_Row('p2_s_v2', 'Tensão V2 (sobre R2)') + UI_Row('p2_s_v3', 'Tensão V3 (sobre R3)');
+        document.getElementById("p2_paralelo").innerHTML = UI_Row('p2_p_req', 'Req (Paralelo R1//R2//R3)') + UI_Row('p2_p_itotal', 'I Total 1ª Medição (mA)') + UI_Row('p2_p_vtotal', 'Tensão Total da Fonte') + UI_Row('p2_p_v1', 'Tensão V1 (sobre R1)') + UI_Row('p2_p_v2', 'Tensão V2 (sobre R2)') + UI_Row('p2_p_v3', 'Tensão V3 (sobre R3)') + UI_Row('p2_p_itotal2', 'I Total 2ª Medição (mA)') + UI_Row('p2_p_i1', 'Corrente I1 (mA)') + UI_Row('p2_p_i2', 'Corrente I2 (mA)') + UI_Row('p2_p_i23', 'Corrente I23 (mA)') + UI_Row('p2_p_i3', 'Corrente I3 (mA)');
+        document.getElementById("p2_misto").innerHTML = UI_Row('p2_m_req', 'Req Mista R1 + (R2//R3)') + UI_Row('p2_m_itotal', 'I Total 1ª Medição (mA)') + UI_Row('p2_m_vtotal', 'Tensão Total da Fonte (6.5V)') + UI_Row('p2_m_v1', 'Tensão V1 (sobre R1)') + UI_Row('p2_m_v2', 'Tensão V2 (sobre R2)') + UI_Row('p2_m_v3', 'Tensão V3 (sobre R3)') + UI_Row('p2_m_itotal2', 'I Total 2ª Medição (mA)') + UI_Row('p2_m_i1', 'Corrente I1 (mA)') + UI_Row('p2_m_i2', 'Corrente I2 (mA)') + UI_Row('p2_m_i3', 'Corrente I3 (mA)');
+    }
+
+    function enviarPratica2() {
+        let infoA = document.getElementById("infoP2").value.trim(); if (!infoA) return alert("Preencha a identificação.");
+        let sub = { grupo: grupoAtual, tipo: 'Prática 2', infoAtividade: infoA, divulgado: false, timestamp: firebase.database.ServerValue.TIMESTAMP, resistores: [], serie: {}, paralelo: {}, misto: {} };
+        let R = [];
+
+        for(let i=1; i<=3; i++) {
+            let t = getStr(`p2_r${i}_tipo`), c1 = getStr(`p2_r${i}_c1`), c2 = getStr(`p2_r${i}_c2`), c3 = getStr(`p2_r${i}_c3`), mul = getStr(`p2_r${i}_mul`), tol = getStr(`p2_r${i}_tol`);
+            let gabNom = (t === "5") ? (digitos[c1]*100 + digitos[c2]*10 + digitos[c3]) * mults[mul] : (digitos[c1]*10 + digitos[c2]) * mults[mul]; R.push(gabNom);
+            let medA = getVal(`p2_r${i}_med`);
+            sub.resistores.push({ id: i, t:t, c1:c1, c2:c2, c3:c3, mul:mul, tol:tol, gabNom: gabNom, nomA: getVal(`p2_r${i}_nom`), medA: medA, tolA: getStr(`p2_r${i}_tol_aluno`), deltaA: getVal(`p2_r${i}_delta`), escala: getStr(`p2_r${i}_escala`), gabDelta: calcDeltaInterno(gabNom, medA) });
+        }
+
+        let r1 = R[0], r2 = R[1], r3 = R[2];
+        let sReq = r1+r2+r3; let sItot = (5/sReq)*1000;
+        let getS = (id, gNom) => { let m = getVal('p2_s_'+id+'_med'); return { nomA: getVal('p2_s_'+id+'_nom'), medA: m, deltaA: getVal('p2_s_'+id+'_delta'), escala: getStr('p2_s_'+id+'_escala'), gabNom: gNom, gabDelta: calcDeltaInterno(gNom, m) }; };
+        sub.serie = { req: getS('req', sReq), itotal: getS('itotal', sItot), vtotal: getS('vtotal', 5), v1: getS('v1', 5*r1/sReq), v2: getS('v2', 5*r2/sReq), v3: getS('v3', 5*r3/sReq) };
+
+        let pReq = 1/(1/r1 + 1/r2 + 1/r3); let pItot = (5/pReq)*1000;
+        let getP = (id, gNom) => { let m = getVal('p2_p_'+id+'_med'); return { nomA: getVal('p2_p_'+id+'_nom'), medA: m, deltaA: getVal('p2_p_'+id+'_delta'), escala: getStr('p2_p_'+id+'_escala'), gabNom: gNom, gabDelta: calcDeltaInterno(gNom, m) }; };
+        sub.paralelo = { req: getP('req', pReq), itotal: getP('itotal', pItot), vtotal: getP('vtotal', 5), v1: getP('v1', 5), v2: getP('v2', 5), v3: getP('v3', 5), itotal2: getP('itotal2', pItot), i1: getP('i1', (5/r1)*1000), i2: getP('i2', (5/r2)*1000), i23: getP('i23', (5/r2)*1000 + (5/r3)*1000), i3: getP('i3', (5/r3)*1000) };
+
+        let mR23 = 1/(1/r2 + 1/r3); let mReq = r1 + mR23; let mItot = (6.5/mReq)*1000;
+        let getM = (id, gNom) => { let m = getVal('p2_m_'+id+'_med'); return { nomA: getVal('p2_m_'+id+'_nom'), medA: m, deltaA: getVal('p2_m_'+id+'_delta'), escala: getStr('p2_m_'+id+'_escala'), gabNom: gNom, gabDelta: calcDeltaInterno(gNom, m) }; };
+        let mV1 = (mItot/1000)*r1; let mV23 = (mItot/1000)*mR23;
+        sub.misto = { req: getM('req', mReq), itotal: getM('itotal', mItot), vtotal: getM('vtotal', 6.5), v1: getM('v1', mV1), v2: getM('v2', mV23), v3: getM('v3', mV23), itotal2: getM('itotal2', mItot), i1: getM('i1', mItot), i2: getM('i2', (mV23/r2)*1000), i3: getM('i3', (mV23/r3)*1000) };
+
+        let btnEl = document.getElementById("btnPratica2");
+        if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
+        db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    }
+
+    function renderizarPratica3() {
+        renderResistoresUI(3, "p3_", "p3_resistores");
+        document.getElementById("p3_serie").innerHTML = UI_Row('p3_s_vtotal', 'Tensão Total da Fonte (V)') + UI_Row('p3_s_v1', 'Tensão V1 (sobre R1)') + UI_Row('p3_s_v2', 'Tensão V2 (sobre R2)') + UI_Row('p3_s_v3', 'Tensão V3 (sobre R3)');
+        document.getElementById("p3_paralelo").innerHTML = UI_Row('p3_p_itotal', 'I Total (mA)') + UI_Row('p3_p_i1', 'Corrente I1 (mA)') + UI_Row('p3_p_i2', 'Corrente I2 (mA)') + UI_Row('p3_p_i3', 'Corrente I3 (mA)');
+    }
+
+    function enviarPratica3() {
+        let infoA = document.getElementById("infoP3").value.trim(); if (!infoA) return alert("Preencha a identificação.");
+        let sub = { grupo: grupoAtual, tipo: 'Prática 3', infoAtividade: infoA, divulgado: false, timestamp: firebase.database.ServerValue.TIMESTAMP, resistores: [], serie: {}, paralelo: {} };
+        let R = [];
+
+        for(let i=1; i<=3; i++) {
+            let t = getStr(`p3_r${i}_tipo`), c1 = getStr(`p3_r${i}_c1`), c2 = getStr(`p3_r${i}_c2`), c3 = getStr(`p3_r${i}_c3`), mul = getStr(`p3_r${i}_mul`), tol = getStr(`p3_r${i}_tol`);
+            let gabNom = (t === "5") ? (digitos[c1]*100 + digitos[c2]*10 + digitos[c3]) * mults[mul] : (digitos[c1]*10 + digitos[c2]) * mults[mul]; R.push(gabNom);
+            let medA = getVal(`p3_r${i}_med`);
+            sub.resistores.push({ id: i, t:t, c1:c1, c2:c2, c3:c3, mul:mul, tol:tol, gabNom: gabNom, nomA: getVal(`p3_r${i}_nom`), medA: medA, tolA: getStr(`p3_r${i}_tol_aluno`), deltaA: getVal(`p3_r${i}_delta`), escala: getStr(`p3_r${i}_escala`), gabDelta: calcDeltaInterno(gabNom, medA) });
+        }
+
+        let r1 = R[0], r2 = R[1], r3 = R[2];
+        let getO = (prefix, id, gNom) => { let m = getVal(prefix+id+'_med'); return { nomA: getVal(prefix+id+'_nom'), medA: m, deltaA: getVal(prefix+id+'_delta'), escala: getStr(prefix+id+'_escala'), gabNom: gNom, gabDelta: calcDeltaInterno(gNom, m) }; };
+
+        let sReq = r1+r2+r3;
+        sub.serie = { vtotal: getO('p3_s_', 'vtotal', 5), v1: getO('p3_s_', 'v1', 5*r1/sReq), v2: getO('p3_s_', 'v2', 5*r2/sReq), v3: getO('p3_s_', 'v3', 5*r3/sReq) };
+
+        let pReq = 1/(1/r1 + 1/r2 + 1/r3); let iTot_mA = (5/pReq)*1000;
+        sub.paralelo = { itotal: getO('p3_p_', 'itotal', iTot_mA), i1: getO('p3_p_', 'i1', iTot_mA * (pReq/r1)), i2: getO('p3_p_', 'i2', iTot_mA * (pReq/r2)), i3: getO('p3_p_', 'i3', iTot_mA * (pReq/r3)) };
+
+        let btnEl = document.getElementById("btnPratica3");
+        if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
+        db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    }
+
+    function renderizarPratica4() {
+        renderResistoresUI(4, "p4_", "p4_resistores");
+
+        document.getElementById("p4_fontes").innerHTML = 
+            UI_Row('p4_e1', 'Tensão Fonte E1 (Medida)') + UI_Row('p4_e2', 'Tensão Fonte E2 (Medida)');
+
+        document.getElementById("p4_nos").innerHTML = 
+            UI_Row_OnlyNominal('p4_no_va', 'Tensão Nó A (Va)') + UI_Row_OnlyNominal('p4_no_vb', 'Tensão Nó B (Vb)');
+
+        document.getElementById("p4_vr").innerHTML = 
+            UI_Row('p4_vr_1', 'Tensão VR1') + UI_Row('p4_vr_2', 'Tensão VR2') + UI_Row('p4_vr_3', 'Tensão VR3') + UI_Row('p4_vr_4', 'Tensão VR4');
+
+        document.getElementById("p4_i").innerHTML = 
+            UI_Row('p4_i_1', 'Corrente I1 (em R1 e E1) (mA)') + 
+            UI_Row('p4_i_2', 'Corrente I2 (em R2) (mA)') + 
+            UI_Row('p4_i_3', 'Corrente I3 (ramo E2, do - pro +) (mA)') + 
+            UI_Row('p4_i_4', 'Corrente I4 (ramo E2, do + pro -) (mA)') + 
+            UI_Row('p4_i_5', 'Corrente I5 (em R3 pro terra) (mA)') + 
+            UI_Row('p4_i_6', 'Corrente I6 (em R4 pro terra) (mA)');
+    }
+
+    function enviarPratica4() {
+        let infoA = document.getElementById("infoP4").value.trim(); if (!infoA) return alert("Preencha a identificação.");
+        let sub = { grupo: grupoAtual, tipo: 'Prática 4', infoAtividade: infoA, divulgado: false, timestamp: firebase.database.ServerValue.TIMESTAMP, resistores: [], fontes: {}, nos: {}, v_res: {}, i_res: {} };
+        let R = [];
+
+        for(let i=1; i<=4; i++) {
+            let t = getStr(`p4_r${i}_tipo`), c1 = getStr(`p4_r${i}_c1`), c2 = getStr(`p4_r${i}_c2`), c3 = getStr(`p4_r${i}_c3`), mul = getStr(`p4_r${i}_mul`), tol = getStr(`p4_r${i}_tol`);
+            let gabNom = (t === "5") ? (digitos[c1]*100 + digitos[c2]*10 + digitos[c3]) * mults[mul] : (digitos[c1]*10 + digitos[c2]) * mults[mul]; R.push(gabNom);
+            let medA = getVal(`p4_r${i}_med`);
+            sub.resistores.push({ id: i, t:t, c1:c1, c2:c2, c3:c3, mul:mul, tol:tol, gabNom: gabNom, nomA: getVal(`p4_r${i}_nom`), medA: medA, tolA: getStr(`p4_r${i}_tol_aluno`), deltaA: getVal(`p4_r${i}_delta`), escala: getStr(`p4_r${i}_escala`), gabDelta: calcDeltaInterno(gabNom, medA) });
+        }
+
+        let r1 = R[0], r2 = R[1], r3 = R[2], r4 = R[3];
+        let getO = (prefix, id, gNom) => { let m = getVal(prefix+id+'_med'); return { nomA: getVal(prefix+id+'_nom'), medA: m, deltaA: getVal(prefix+id+'_delta'), escala: getStr(prefix+id+'_escala'), gabNom: gNom, gabDelta: calcDeltaInterno(gNom, m) }; };
+        let getNominalOnly = (prefix, id, gNom) => { return { nomA: getVal(prefix+id+'_nom'), gabNom: gNom }; };
+
+        sub.fontes = { e1: getO('p4_e', '1', 5), e2: getO('p4_e', '2', 12) };
+
+        let invSum = (1/r1) + (1/r2) + (1/r3) + (1/r4);
+        let Va = (5/r1 - 12/r3 - 12/r4) / invSum;
+        let Vb = Va + 12;
+
+        sub.nos = { va: getNominalOnly('p4_no_', 'va', Va), vb: getNominalOnly('p4_no_', 'vb', Vb) };
+
+        let vr1 = Va - 5; let vr2 = Va; let vr3 = Vb; let vr4 = Vb; 
+        sub.v_res = { vr1: getO('p4_vr_', '1', vr1), vr2: getO('p4_vr_', '2', vr2), vr3: getO('p4_vr_', '3', vr3), vr4: getO('p4_vr_', '4', vr4) };
+
+        let i1 = (vr1/r1)*1000;
+        let i2 = (vr2/r2)*1000;
+        let i3 = -(i1 + i2); 
+        
+        let i5 = (vr3/r3)*1000;
+        let i6 = (vr4/r4)*1000;
+        let i4 = -(i5 + i6);
+        
+        sub.i_res = { 
+            i1: getO('p4_i_', '1', i1), 
+            i2: getO('p4_i_', '2', i2), 
+            i3: getO('p4_i_', '3', i3), 
+            i4: getO('p4_i_', '4', i4), 
+            i5: getO('p4_i_', '5', i5),
+            i6: getO('p4_i_', '6', i6)
+        };
+
+        let btnEl = document.getElementById("btnPratica4");
+        if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
+        db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    }
+
+    function mostrarRegistros(tipo) {
+        document.getElementById("tituloListaProfessor").innerText = `Registros: ${tipo}`;
+        let lista = document.getElementById("listaRegistros"); lista.innerHTML = "<p>Buscando...</p>";
+        mostrarTela("listaProfessor"); 
+        
+        db.ref('registrosLabIF').once('value').then(snap => {
+            let regs = []; snap.forEach(c => { let d = c.val(); d.id = c.key; regs.push(d); }); window.dadosProfessor = regs; 
+            let filts = regs.filter(r => r.tipo === tipo);
+            if (filts.length === 0) return lista.innerHTML = "<p>Nenhum registro encontrado.</p>"; 
+            let gruposMap = {}; filts.forEach(r => { if(!gruposMap[r.grupo]) gruposMap[r.grupo] = []; gruposMap[r.grupo].push(r); });
+            let h = "";
+            Object.keys(gruposMap).sort().forEach(g => {
+                h += `<div style="background: white; border: 1px solid #ccc; border-radius: 8px; margin-top: 20px;"><h2 style="margin:0; padding:15px; background:#f0fdf4; border-bottom:1px solid #ccc;">Grupo: ${g}</h2><div style="padding: 15px;">`;
+                gruposMap[g].forEach(r => {
+                    h += `<div class="registro"><strong>Id:</strong> ${r.infoAtividade}<br><br><button onclick="gerarPDFCorrecao('${r.id}')" class="btn-secundario">📄 Ver Correção (PDF)</button><br>${!r.divulgado ? `<button onclick="divulgarNota('${r.id}', '${tipo}')" class="btn-secundario" style="margin-top:10px;">Liberar ao Aluno</button>` : `<span class="status-ok" style="margin-top:10px; display:inline-block">Avaliação Liberada ✔</span>`}<button onclick="apagarRegistro('${r.id}', '${tipo}')" class="btn-perigo" style="margin-top:10px; float:right;">Excluir</button><div style="clear:both"></div></div>`;
+                });
+                h += `</div></div>`;
+            });
+            lista.innerHTML = h;
+        });
+    }
+
+    function divulgarNota(id, tipo) { db.ref('registrosLabIF/' + id).update({ divulgado: true }).then(() => mostrarRegistros(tipo)); }
+    function apagarRegistro(id, tipo) { if (confirm("Confirma exclusão?")) { db.ref('registrosLabIF/' + id).remove().then(() => mostrarRegistros(tipo)); } }
+
+    function mostrarResultadosGrupo() {
+        let lista = document.getElementById("listaGrupo"); lista.innerHTML = "<p>Buscando...</p>"; mostrarTela("resultadoGrupo");
+        db.ref('registrosLabIF').once('value').then(snap => {
+            let regs = []; snap.forEach(c => { let d = c.val(); d.id = c.key; regs.push(d); }); window.dadosProfessor = regs; 
+            lista.innerHTML = ""; let achou = false;
+            regs.forEach(r => {
+                if (r.grupo === grupoAtual && r.divulgado) {
+                    achou = true;
+                    lista.innerHTML += `<div class="registro"><strong>Prática:</strong> ${r.tipo}<br><strong>ID:</strong> ${r.infoAtividade}<br><br><button onclick="gerarPDFCorrecao('${r.id}')" class="btn-secundario">📄 Baixar Correção (PDF)</button></div>`;
+                }
+            });
+            if (!achou) lista.innerHTML = "<p>Não há avaliações liberadas.</p>";
+        });
+    }
+
+    function checkAcerto(nomA, gabNom, deltaA, gabDelta) {
+        let diffNom = Math.abs(Math.abs(nomA||0) - Math.abs(gabNom||0));
+        let limitCorretoNom = Math.abs(gabNom||0) * 0.002 + 0.05; 
+        let limitParcialNom = Math.abs(gabNom||0) * 0.05 + 0.1;   
+        
+        let diffDelta = Math.abs(Math.abs(deltaA||0) - Math.abs(gabDelta||0));
+        let limitCorretoDelta = 0.5; 
+        let limitParcialDelta = 1.5; 
+
+        let isCorretoNom = diffNom <= limitCorretoNom;
+        let isParcialNom = diffNom <= limitParcialNom;
+        let isCorretoDelta = diffDelta <= limitCorretoDelta;
+        let isParcialDelta = diffDelta <= limitParcialDelta;
+
+        if (isCorretoNom && isCorretoDelta) return '<span style="color:#059669; font-weight:bold;">✓ Correto</span>';
+        else if (isParcialNom && isParcialDelta) return '<span style="color:#ca8a04; font-weight:bold;">⚠ Parcialmente Incorreta</span>';
+        else return '<span style="color:#ef4444; font-weight:bold;">✗ Incorreto</span>';
+    }
+
+    function rowHtml(label, obj, unit) {
+        if(!obj) return '';
+        const stlGabarito = "background-color: #dcfce7; color: #065f46; font-weight: bold; border: 2px solid #10b981;";
+        let status = checkAcerto(obj.nomA, obj.gabNom, obj.deltaA, obj.gabDelta);
+        return `<tr>
+            <td><strong>${label}</strong></td>
+            <td style="${stlGabarito}">${formatEng(obj.gabNom, unit)}</td>
+            <td>${formatEng(obj.nomA, unit)}</td>
+            <td>${formatEng(obj.medA, unit)}<br><small>Escala: ${obj.escala||'-'}</small></td>
+            <td style="${stlGabarito}">${(obj.gabDelta||0).toFixed(2)}%</td>
+            <td>${(obj.deltaA||0)}%</td>
+            <td>${status}</td>
+        </tr>`;
+    }
+
+    function rowHtmlNominalOnly(label, obj, unit) {
+        if(!obj) return '';
+        const stlGabarito = "background-color: #dcfce7; color: #065f46; font-weight: bold; border: 2px solid #10b981;";
+        let diffNom = Math.abs(Math.abs(obj.nomA||0) - Math.abs(obj.gabNom||0));
+        let limitCorretoNom = Math.abs(obj.gabNom||0) * 0.002 + 0.05;
+        let limitParcialNom = Math.abs(obj.gabNom||0) * 0.05 + 0.1;
+        let status;
+
+        if (diffNom <= limitCorretoNom) status = '<span style="color:#059669; font-weight:bold;">✓ Correto</span>';
+        else if (diffNom <= limitParcialNom) status = '<span style="color:#ca8a04; font-weight:bold;">⚠ Parcialmente Incorreta</span>';
+        else status = '<span style="color:#ef4444; font-weight:bold;">✗ Incorreto</span>';
+
+        return `<tr>
+            <td><strong>${label}</strong></td>
+            <td style="${stlGabarito}">${formatEng(obj.gabNom, unit)}</td>
+            <td colspan="4">${formatEng(obj.nomA, unit)}</td>
+            <td>${status}</td>
+        </tr>`;
+    }
+
+    function gerarPDFCorrecao(idRegistro) {
+        let r = window.dadosProfessor.find(x => x.id === idRegistro);
+        if(!r) return alert("Erro ao carregar dados.");
+
+        const stlGabarito = "background-color: #dcfce7; color: #065f46; font-weight: bold; border: 2px solid #10b981;";
+        
+        let htmlStr = `
+        <style>
+            tr { page-break-inside: avoid !important; }
+            h3 { page-break-after: avoid !important; margin-top: 30px; }
+            table { page-break-inside: auto; }
+        </style>
+        <div style="width: 1050px; box-sizing: border-box; padding: 20px; font-family: Arial, sans-serif; color: #333; background: #fff;">
+            <div style="text-align:center; margin-bottom: 20px;">
+                <h1 style="color:#10b981; font-size:24px; margin-bottom: 5px;">Relatório de Correção - ${r.tipo}</h1>
+                <p style="margin:0; font-size:14px; color:#555;">Grupo: <strong>${r.grupo}</strong> | ID: <strong>${r.infoAtividade}</strong></p>
+            </div>`;
+
+        let tbHead = (titulo) => `<h3>${titulo}</h3>
+            <table border="1" width="100%" cellspacing="0" cellpadding="6" style="border-collapse:collapse; text-align:center; font-size:12px; margin-bottom: 20px;">
+                <tr style="background:#f0fdf4; color:#065f46;">
+                    <th>Variável</th><th style="${stlGabarito}">Gabarito (Nominal)</th><th>Aluno (Nominal)</th><th>Medição (Aluno)</th><th style="${stlGabarito}">Gabarito (ΔR %)</th><th>ΔR % (Aluno)</th><th>Status</th>
+                </tr>`;
+
+        htmlStr += tbHead("1. Resistores Individuais");
+        if(r.resistores) {
+            r.resistores.forEach(x => {
+                let status = checkAcerto(x.nomA, x.gabNom, x.deltaA, x.gabDelta);
+                let cores = x.t === "5" ? `${x.c1},${x.c2},${x.c3}, Mult:${x.mul}, Tol:${x.tol}` : `${x.c1},${x.c2}, Mult:${x.mul}, Tol:${x.tol}`;
+                htmlStr += `<tr>
+                    <td><strong>R${x.id}</strong><br><span style="font-size:9px">${cores}</span></td>
+                    <td style="${stlGabarito}">${formatEng(x.gabNom, 'Ω')}</td><td>${formatEng(x.nomA, 'Ω')}</td><td>${formatEng(x.medA, 'Ω')}<br><small>Escala: ${x.escala||'-'}</small></td>
+                    <td style="${stlGabarito}">${(x.gabDelta||0).toFixed(2)}%</td><td>${(x.deltaA||0)}%</td><td>${status}</td>
+                </tr>`;
+            });
+        }
+        htmlStr += `</table>`;
+
+        if (r.tipo === 'Prática 1') {
+            htmlStr += tbHead("2. Associação em Série"); if (r.serie) r.serie.forEach(x => htmlStr += rowHtml(`R1 a R${x.qtd}`, x, 'Ω')); htmlStr += `</table>`;
+            htmlStr += tbHead("3. Associação em Paralelo"); if (r.paralelo) r.paralelo.forEach(x => htmlStr += rowHtml(`R1 a R${x.qtd}`, x, 'Ω')); htmlStr += `</table>`;
+            if(r.mista) { htmlStr += tbHead("4. Associação Mista"); htmlStr += rowHtml('R1 // (R2+R3) // (R4+R5)', r.mista, 'Ω'); htmlStr += `</table>`; }
+        } 
+        else if (r.tipo === 'Prática 2') {
+            if(r.serie) {
+                htmlStr += tbHead("2. Circuito Série");
+                htmlStr += rowHtml('Req', r.serie.req, 'Ω') + rowHtml('I Total', r.serie.itotal, 'mA') + rowHtml('V Total', r.serie.vtotal, 'V') + rowHtml('V1', r.serie.v1, 'V') + rowHtml('V2', r.serie.v2, 'V') + rowHtml('V3', r.serie.v3, 'V');
+                htmlStr += `</table>`;
+            }
+            if(r.paralelo) {
+                htmlStr += tbHead("3. Circuito Paralelo");
+                htmlStr += rowHtml('Req', r.paralelo.req, 'Ω') + rowHtml('I Total (1)', r.paralelo.itotal, 'mA') + rowHtml('V Total', r.paralelo.vtotal, 'V') + rowHtml('V1', r.paralelo.v1, 'V') + rowHtml('V2', r.paralelo.v2, 'V') + rowHtml('V3', r.paralelo.v3, 'V') + rowHtml('I Total (2)', r.paralelo.itotal2, 'mA') + rowHtml('I1', r.paralelo.i1, 'mA') + rowHtml('I2', r.paralelo.i2, 'mA') + rowHtml('I23', r.paralelo.i23, 'mA') + rowHtml('I3', r.paralelo.i3, 'mA');
+                htmlStr += `</table>`;
+            }
+            if(r.misto) {
+                htmlStr += tbHead("4. Circuito Misto");
+                htmlStr += rowHtml('Req', r.misto.req, 'Ω') + rowHtml('I Total (1)', r.misto.itotal, 'mA') + rowHtml('V Total', r.misto.vtotal, 'V') + rowHtml('V1', r.misto.v1, 'V') + rowHtml('V2', r.misto.v2, 'V') + rowHtml('V3', r.misto.v3, 'V') + rowHtml('I Total (2)', r.misto.itotal2, 'mA') + rowHtml('I1', r.misto.i1, 'mA') + rowHtml('I2', r.misto.i2, 'mA') + rowHtml('I3', r.misto.i3, 'mA');
+                htmlStr += `</table>`;
+            }
+        }
+        else if (r.tipo === 'Prática 3') {
+            if(r.serie) {
+                htmlStr += tbHead("2. Divisor de Tensão (Série)");
+                htmlStr += rowHtml('Tensão Total', r.serie.vtotal, 'V') + rowHtml('V1', r.serie.v1, 'V') + rowHtml('V2', r.serie.v2, 'V') + rowHtml('V3', r.serie.v3, 'V');
+                htmlStr += `</table>`;
+            }
+            if(r.paralelo) {
+                htmlStr += tbHead("3. Divisor de Corrente (Paralelo)");
+                htmlStr += rowHtml('I Total', r.paralelo.itotal, 'mA') + rowHtml('I1', r.paralelo.i1, 'mA') + rowHtml('I2', r.paralelo.i2, 'mA') + rowHtml('I3', r.paralelo.i3, 'mA');
+                htmlStr += `</table>`;
+            }
+        }
+        else if (r.tipo === 'Prática 4') {
+            if(r.fontes) {
+                htmlStr += tbHead("2. Fontes de Tensão");
+                htmlStr += rowHtml('E1', r.fontes.e1, 'V') + rowHtml('E2', r.fontes.e2, 'V');
+                htmlStr += `</table>`;
+            }
+            if(r.nos) {
+                htmlStr += `<h3>3. Tensões Nodais (Supernó)</h3>
+                <table border="1" width="100%" cellspacing="0" cellpadding="6" style="border-collapse:collapse; text-align:center; font-size:12px; margin-bottom: 20px;">
+                    <tr style="background:#f0fdf4; color:#065f46;">
+                        <th>Variável</th><th style="${stlGabarito}">Gabarito (Nominal)</th><th colspan="4">Aluno (Nominal)</th><th>Status</th>
+                    </tr>`;
+                htmlStr += rowHtmlNominalOnly('Va', r.nos.va, 'V') + rowHtmlNominalOnly('Vb', r.nos.vb, 'V');
+                htmlStr += `</table>`;
+            }
+            if(r.v_res) {
+                htmlStr += tbHead("4. Tensões nos Resistores");
+                htmlStr += rowHtml('VR1', r.v_res.vr1, 'V') + rowHtml('VR2', r.v_res.vr2, 'V') + rowHtml('VR3', r.v_res.vr3, 'V') + rowHtml('VR4', r.v_res.vr4, 'V');
+                htmlStr += `</table>`;
+            }
+            if(r.i_res) {
+                htmlStr += tbHead("5. Correntes");
+                if (r.i_res.i1) htmlStr += rowHtml('I1 (R1 e E1)', r.i_res.i1, 'mA');
+                if (r.i_res.i2) htmlStr += rowHtml('I2 (R2)', r.i_res.i2, 'mA');
+                if (r.i_res.i3) htmlStr += rowHtml('I3 (Ramo E2: do - pro +)', r.i_res.i3, 'mA');
+                if (r.i_res.i4) htmlStr += rowHtml('I4 (Ramo E2: do + pro -)', r.i_res.i4, 'mA');
+                if (r.i_res.i5) htmlStr += rowHtml('I5 (R3)', r.i_res.i5, 'mA');
+                if (r.i_res.i6) htmlStr += rowHtml('I6 (R4)', r.i_res.i6, 'mA');
+                htmlStr += `</table>`;
+            }
+        }
+        
+        htmlStr += `</div>`;
+        let nomeArquivo = `Correcao_${r.tipo.replace(/\s/g, '')}_${r.grupo}.pdf`;
+        
+        html2pdf().set({
+            margin: [10, 10, 10, 10], 
+            filename: nomeArquivo, 
+            pagebreak: { mode: ['css', 'legacy'], avoid: 'tr' }, 
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true }, 
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        }).from(htmlStr).save().then(() => console.log("PDF Gerado com sucesso")).catch(e => alert("Erro PDF"));
+    }
+</script>
+
+<!-- SCRIPT DO APLICATIVO (SERVICE WORKER) -->
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log("App PWA registrado com sucesso!"))
+      .catch(err => console.log("Erro PWA:", err));
+  }
+</script>
+
+</body>
+</html>
