@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icone-192.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Laboratório - IFCE Maranguape</title>
@@ -904,15 +906,20 @@
         }).from(htmlStr).save().then(() => console.log("PDF Gerado com sucesso")).catch(e => alert("Erro PDF"));
     }
 </script>
-
-<!-- SCRIPT DO APLICATIVO (SERVICE WORKER) -->
 <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-      .then(() => console.log("App PWA registrado com sucesso!"))
-      .catch(err => console.log("Erro PWA:", err));
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(registration => {
+          console.log('Service Worker registrado com sucesso:', registration);
+        })
+        .catch(error => {
+          console.log('Falha ao registrar o Service Worker:', error);
+        });
+    });
   }
 </script>
+
 
 </body>
 </html>
