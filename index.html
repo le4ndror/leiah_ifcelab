@@ -94,8 +94,16 @@
         .input-destaque { border: 2px solid var(--primary-color); background: #f0fdf4; font-weight: 500; }
         button { background-color: var(--primary-color); color: white; font-weight: 600; cursor: pointer; border: none; }
         button:hover { background-color: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16,185,129,0.2); }
-        .btn-voltar, .btn-secundario { background-color: transparent; color: var(--text-main); border: 1px solid var(--border-color); }
-        .btn-voltar:hover, .btn-secundario:hover { background-color: #f3f4f6; }
+        .btn-voltar, .btn-secundario { 
+            background-color: #f3f4f6; /* Fundo cinza claro igual da foto */
+            color: var(--text-main); 
+            border: none; /* Remove a borda que estava deixando o botão marcado */
+            font-weight: 600;
+        }
+        
+        .btn-voltar:hover, .btn-secundario:hover { 
+            background-color: #e5e7eb; 
+        }
         .btn-perigo { background-color: var(--danger-color); color: white; }
         .btn-perigo:hover { background-color: #dc2626; }
         
