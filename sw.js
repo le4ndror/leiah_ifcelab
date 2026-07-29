@@ -1,5 +1,5 @@
 // Mudamos o nome para v2 para forçar o celular a baixar a versão nova
-const CACHE_NAME = 'lab-eletronica-v4'; 
+const CACHE_NAME = 'lab-eletronica-v5'; 
 
 // Lista de arquivos que o aplicativo precisa salvar no celular
 const urlsToCache = [
