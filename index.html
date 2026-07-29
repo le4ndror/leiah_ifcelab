@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,10 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
-        /* Adicione esta regra ao seu .card existente */
-        .card {
-            position: relative; /* Necessário para ancorar o botão no topo */
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
         /* Novo botão de voltar no topo */
         .btn-voltar-topo {
@@ -51,21 +46,6 @@
             .btn-voltar-topo { top: 15px; left: 10px; }
         }
 
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
-        
-        /* ... SEU CSS CONTINUA NORMALMENTE AQUI (:root, *, body, etc) ... */
-    
-    <!-- TAGS DO APLICATIVO (PWA) -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#10b981">
-    
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
-
         :root {
             --primary-color: #20c997; /* Verde mais vibrante do botão principal */
             --primary-hover: #1ba078; 
@@ -83,7 +63,10 @@
         /* Fundo ajustado para cor sólida usando a variável --bg-color */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
         .container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; max-width: 1000px; width: 100%; }
-        .card { background: var(--surface-color); border-radius: 12px; padding: 48px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); border: 1px solid rgba(16,185,129,0.1); max-height: 90vh; overflow-y: auto; }
+        
+        /* Adicione esta regra ao seu .card existente */
+        .card { background: var(--surface-color); border-radius: 12px; padding: 48px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); border: 1px solid rgba(16,185,129,0.1); max-height: 90vh; overflow-y: auto; position: relative; }
+        
         .card::-webkit-scrollbar { width: 6px; } .card::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         h1 { font-weight: 600; font-size: 1.7rem; margin-bottom: 8px; } h2 { font-weight: 400; font-size: 1.1rem; margin-top: 0; margin-bottom: 30px; color: var(--text-muted); }
         .desc { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 16px; }
@@ -146,8 +129,6 @@
         .faixa-dinamica { position: absolute; width: 10%; height: 100%; border: 1px solid rgba(0,0,0,0.1); }
     </style>
 </head>
-<body>
-
 <div class="container">
     <div class="card">
         <button id="btnVoltarTopo" class="btn-voltar-topo" onclick="voltarPagina()">
