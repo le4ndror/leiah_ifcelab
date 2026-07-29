@@ -1,41 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Laboratório - IFCE Maranguape</title>
-    <style>
-        .btn-seta-topo {
-    position: fixed !important;
-    top: 10px !important;
-    left: 10px !important;
-    z-index: 9999 !important;
-
-    /* Remove o fundo verde, bordas e tamanhos grandes do botão padrão */
-    width: auto !important;
-    height: auto !important;
-    background: transparent !important; 
-    border: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-
-    /* Tamanho compacto */
-    font-size: 20px !important; /* Diminua para 18px se quiser ainda menor */
-    color: #333 !important;     /* Cor da seta (troque por #fff se o fundo do seu app for escuro) */
-    padding: 6px 10px !important;
-    margin: 0 !important;
-    cursor: pointer;
-    line-height: 1 !important;
-}
-
-/* Efeito sutil de clique sem mudar de cor */
-.btn-seta-topo:active {
-    opacity: 0.5;
-}
-    </style>
-</head>
-<body>
     
     <!-- TAGS DO APLICATIVO (PWA) -->
     <link rel="manifest" href="manifest.json">
@@ -73,6 +41,27 @@
         .btn-perigo { background-color: var(--danger-color); color: white; }
         .btn-perigo:hover { background-color: #dc2626; }
         
+        /* ESTILO COMPACTO E FIXO DA SETA DE VOLTAR NO TOPO */
+        .btn-seta-topo {
+            position: fixed !important;
+            top: 12px !important;
+            left: 12px !important;
+            z-index: 9999 !important;
+            width: auto !important;
+            height: auto !important;
+            background: transparent !important; 
+            border: none !important;
+            box-shadow: none !important;
+            outline: none !important;
+            font-size: 22px !important;
+            color: #333 !important;
+            padding: 6px 10px !important;
+            margin: 0 !important;
+            cursor: pointer;
+            line-height: 1 !important;
+        }
+        .btn-seta-topo:active { opacity: 0.5; }
+
         /* CSS ESPECIAL PARA A CONTA DE TESTE */
         .btn-teste { display: none; background-color: #fef08a; border: 1px solid #facc15; color: #854d0e; }
         .btn-teste:hover { background-color: #fde047; }
@@ -98,7 +87,6 @@
         .flex-row { display: flex; gap: 10px; margin-top: 8px; align-items: center; }
         .col-4 { flex: 1; }
 
-        /* AJUSTE PARA O CELULAR (Responsividade das tabelas de input) */
         @media (max-width: 600px) {
             .flex-row { flex-direction: column; gap: 4px; }
             .col-4 { width: 100%; }
@@ -114,15 +102,14 @@
 </head>
 <body>
 
+<!-- BOTÃO FIXO DE VOLTAR NO CANTO SUPERIOR ESQUERDO -->
+<button onclick="acaoVoltar()" class="btn-seta-topo" aria-label="Voltar">&#8592;</button>
+
 <div class="container">
     <div class="card">
         <div id="inicio" class="tela ativa">
             <h1>Instituto Federal - Maranguape</h1>
             <h2>Laboratório de Eletrônica Básica</h2>
-            <div style="max-width: 400px; margin: 0 auto;">
-                <button onclick="acaoVoltar()" class="btn-seta-topo">&#8592;</button>
-                <<button onclick="acaoVoltar()" class="btn-voltar">Voltar ao Menu</button>
-            </div>
         </div>
 
         <div id="loginProfessor" class="tela">
@@ -166,7 +153,6 @@
                 <button onclick="sairConta()" class="btn-voltar">Sair da Sessão</button>
             </div>
         </div>
-        <button onclick="acaoVoltar()" class="btn-seta-topo">&#8592;</button>
 
         <div id="pratica1" class="tela">
             <h1>Prática 1: Associação de Resistores</h1>
@@ -300,6 +286,39 @@
             if (e.key === "Enter") entrarGrupo();
         });
     });
+
+    // ================= CONTROLE DE HISTÓRICO E NAVEGAÇÃO =================
+    window.addEventListener('DOMContentLoaded', function() {
+        history.replaceState({ tela: 'inicio' }, "", "#inicio");
+    });
+
+    function mostrarTela(idTela, salvarHistorico = true) {
+        const telas = document.querySelectorAll('.tela');
+        telas.forEach(tela => tela.style.display = 'none');
+
+        const telaAlvo = document.getElementById(idTela);
+        if (telaAlvo) {
+            telaAlvo.style.display = 'block';
+        }
+
+        if (salvarHistorico && (!history.state || history.state.tela !== idTela)) {
+            history.pushState({ tela: idTela }, "", "#" + idTela);
+        }
+
+        window.scrollTo(0, 0);
+    }
+
+    window.addEventListener('popstate', function(event) {
+        if (event.state && event.state.tela) {
+            mostrarTela(event.state.tela, false);
+        } else {
+            mostrarTela('inicio', false);
+        }
+    });
+
+    function acaoVoltar() {
+        history.back();
+    }
 
     // ================= FUNÇÃO DE AUTOPREENCHIMENTO PARA TESTE =================
     function executarTeste(num) {
@@ -454,55 +473,11 @@
         if (!nominal || nominal === 0) return 0; 
         return (((Math.abs(medido) - Math.abs(nominal)) / Math.abs(nominal)) * 100);
     }
-
-   // Adicione um segundo parâmetro chamado 'isVoltar'
-    // 1. Ao carregar a página, marca a tela inicial no histórico do celular
-window.addEventListener('DOMContentLoaded', function() {
-    // IMPORTANTE: Mude 'escolhaGrupo' para o ID da sua tela principal/menu
-    history.replaceState({ tela: 'escolhaGrupo' }, "", "#escolhaGrupo");
-});
-
-// 2. Função principal para trocar de tela
-function mostrarTela(idTela, salvarHistorico = true) {
-    // Esconde todas as telas que possuem a classe 'tela'
-    const telas = document.querySelectorAll('.tela');
-    telas.forEach(tela => tela.style.display = 'none');
-
-    // Exibe apenas a tela solicitada
-    const telaAlvo = document.getElementById(idTela);
-    if (telaAlvo) {
-        telaAlvo.style.display = 'block';
-    }
-
-    // Adiciona a tela ao histórico do celular apenas se for um clique normal
-    if (salvarHistorico && (!history.state || history.state.tela !== idTela)) {
-        history.pushState({ tela: idTela }, "", "#" + idTela);
-    }
-
-    window.scrollTo(0, 0);
-}
-
-// 3. Captura o clique no botão de voltar do celular/navegador
-window.addEventListener('popstate', function(event) {
-    if (event.state && event.state.tela) {
-        // Volta para a tela anterior SEM salvar novo histórico
-        mostrarTela(event.state.tela, false);
-    } else {
-        // Se não houver histórico, manda de volta para o menu inicial
-        mostrarTela('escolhaGrupo', false);
-    }
-});
-
-// 4. Função simples para a seta do topo e para os botões de voltar
-function acaoVoltar() {
-    history.back();
-});
     
-   function sairConta() {
+    function sairConta() {
         document.body.classList.remove('is-test');
         grupoAtual = "";
         
-        // Reseta o controle para que o próximo grupo que fizer login comece com telas em branco
         if (typeof pratRendered !== 'undefined') {
             pratRendered = { p1: false, p2: false, p3: false, p4: false };
         }
@@ -543,7 +518,6 @@ function acaoVoltar() {
         });
     }
 
-    // Variável para controlar se a prática já foi renderizada na sessão atual
     let pratRendered = { p1: false, p2: false, p3: false, p4: false };
 
     function abrirAtividade(idModulo) {
@@ -565,7 +539,6 @@ function acaoVoltar() {
         }
     }
 
-    // ================= COMPONENTES ATUALIZADOS PARA TECLADO DE CELULAR =================
     function UI_Row(idPrefix, title) {
         return `<div class="registro"><strong>${title}</strong>
             <div class="flex-row"><input class="col-4" type="number" inputmode="decimal" id="${idPrefix}_nom" placeholder="Nominal (Aluno)"><input class="col-4" type="number" inputmode="decimal" id="${idPrefix}_med" placeholder="Medido"></div>
@@ -737,9 +710,6 @@ function acaoVoltar() {
             UI_Row('p4_i_4', 'Corrente I4 (ramo E2, do + pro -) (mA)') + 
             UI_Row('p4_i_5', 'Corrente I5 (em R3 pro terra) (mA)') + 
             UI_Row('p4_i_6', 'Corrente I6 (em R4 pro terra) (mA)');
-    }
-    function acaoVoltar() {
-        history.back(); // Isso faz exatamente a mesma coisa que apertar o botão de voltar do celular!
     }
 
     function enviarPratica4() {
@@ -1002,6 +972,7 @@ function acaoVoltar() {
         }).from(htmlStr).save().then(() => console.log("PDF Gerado com sucesso")).catch(e => alert("Erro PDF"));
     }
 </script>
+
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -1015,7 +986,6 @@ function acaoVoltar() {
     });
   }
 </script>
-
 
 </body>
 </html>
