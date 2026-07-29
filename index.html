@@ -7,24 +7,31 @@
     <title>Sistema de Laboratório - IFCE Maranguape</title>
     <style>
         .btn-seta-topo {
-    position: fixed;    /* Trava o botão na tela do celular, mesmo ao rolar a página */
-    top: 12px;           /* Distância do topo */
-    left: 12px;          /* Distância da esquerda */
-    z-index: 9999;       /* Garante que a seta fique por cima de qualquer elemento */
-    
-    background: none;
-    border: none;
-    font-size: 24px;     /* Tamanho ideal para toque no celular */
-    color: #333;         /* Mude a cor aqui se o seu fundo for escuro (ex: #fff) */
+    position: fixed !important;
+    top: 10px !important;
+    left: 10px !important;
+    z-index: 9999 !important;
+
+    /* Remove o fundo verde, bordas e tamanhos grandes do botão padrão */
+    width: auto !important;
+    height: auto !important;
+    background: transparent !important; 
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+
+    /* Tamanho compacto */
+    font-size: 20px !important; /* Diminua para 18px se quiser ainda menor */
+    color: #333 !important;     /* Cor da seta (troque por #fff se o fundo do seu app for escuro) */
+    padding: 6px 10px !important;
+    margin: 0 !important;
     cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 50%;  /* Deixa a área de clique redonda */
-    line-height: 1;
+    line-height: 1 !important;
 }
 
-/* Efeito sutil ao clicar/tocar no celular */
+/* Efeito sutil de clique sem mudar de cor */
 .btn-seta-topo:active {
-    background-color: rgba(0, 0, 0, 0.1);
+    opacity: 0.5;
 }
     </style>
 </head>
@@ -159,9 +166,7 @@
                 <button onclick="sairConta()" class="btn-voltar">Sair da Sessão</button>
             </div>
         </div>
-        <button onclick="acaoVoltar()" class="btn-seta-topo">
-    &#8592; <!-- Código HTML para uma seta apontando para a esquerda -->
-</button>
+        <button onclick="acaoVoltar()" class="btn-seta-topo">&#8592;</button>
 
         <div id="pratica1" class="tela">
             <h1>Prática 1: Associação de Resistores</h1>
