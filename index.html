@@ -1024,6 +1024,24 @@
     }
 </script>
 <script>
+    document.addEventListener("visibilitychange", function() {
+            
+            // Verifica se o aluno saiu da tela E se ele está logado em um grupo
+            if (document.hidden && grupoAtual !== "") {
+                
+                // O aluno saiu do app (foi pro WhatsApp, desligou a tela, etc)
+                alert("Atenção! O sistema detectou que o " + grupoAtual + " saiu do aplicativo durante a aula. Mantenha o foco na atividade!");
+                console.warn("⚠️ " + grupoAtual + " saiu do aplicativo!");
+
+            } else if (!document.hidden && grupoAtual !== "") {
+                
+                // O aluno voltou para o app
+                console.log("✅ " + grupoAtual + " voltou para o aplicativo.");
+                
+            }
+        });
+</script>
+<script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')
