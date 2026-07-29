@@ -5,6 +5,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Laboratório - IFCE Maranguape</title>
+    <style>
+        .btn-seta-topo {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: transparent;
+            border: none;
+            font-size: 28px;
+            color: #333;
+            cursor: pointer;
+            z-index: 1000;
+            padding: 5px 10px;
+        }
+
+        .btn-seta-topo:hover {
+            color: #007bff;
+        }
+
+        .tela {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
     
     <!-- TAGS DO APLICATIVO (PWA) -->
     <link rel="manifest" href="manifest.json">
@@ -135,6 +159,9 @@
                 <button onclick="sairConta()" class="btn-voltar">Sair da Sessão</button>
             </div>
         </div>
+        <button onclick="acaoVoltar()" class="btn-seta-topo">
+    &#8592; <!-- Código HTML para uma seta apontando para a esquerda -->
+</button>
 
         <div id="pratica1" class="tela">
             <h1>Prática 1: Associação de Resistores</h1>
@@ -423,7 +450,35 @@
         return (((Math.abs(medido) - Math.abs(nominal)) / Math.abs(nominal)) * 100);
     }
 
-    function mostrarTela(id) { document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa")); document.getElementById(id).classList.add("ativa"); }
+   // Adicione um segundo parâmetro chamado 'isVoltar'
+    function mostrarTela(idTela, isVoltar = false) {
+        
+        // 1. AQUI VAI O SEU CÓDIGO ATUAL QUE ESCONDE/MOSTRA AS TELAS
+        // (Geralmente é algo como pegar todas as telas, dar display 'none' 
+        // e dar display 'block' na tela com o idTela)
+        const telas = document.querySelectorAll('.tela'); // Adapte para a sua classe de telas
+        telas.forEach(tela => tela.style.display = 'none');
+        document.getElementById(idTela).style.display = 'block';
+
+        // 2. NOVO: Salva a tela no histórico do celular, se não for uma ação de voltar
+        if (!isVoltar) {
+            history.pushState({ tela: idTela }, "", "#" + idTela);
+        }
+        
+        // Mantém a rolagem no topo ao mudar de tela
+        window.scrollTo(0, 0); 
+    }
+
+    // 3. NOVO: Faz o botão físico de voltar do celular funcionar
+    window.addEventListener('popstate', function(event) {
+        if (event.state && event.state.tela) {
+            // Se tem histórico, volta para a tela anterior
+            mostrarTela(event.state.tela, true);
+        } else {
+            // Se não tiver, joga pro menu padrão (Mude para o ID do seu menu principal)
+            mostrarTela('escolhaGrupo', true); 
+        }
+    });
     
    function sairConta() {
         document.body.classList.remove('is-test');
@@ -664,6 +719,9 @@
             UI_Row('p4_i_4', 'Corrente I4 (ramo E2, do + pro -) (mA)') + 
             UI_Row('p4_i_5', 'Corrente I5 (em R3 pro terra) (mA)') + 
             UI_Row('p4_i_6', 'Corrente I6 (em R4 pro terra) (mA)');
+    }
+    function acaoVoltar() {
+        history.back(); // Isso faz exatamente a mesma coisa que apertar o botão de voltar do celular!
     }
 
     function enviarPratica4() {
