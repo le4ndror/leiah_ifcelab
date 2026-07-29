@@ -425,9 +425,15 @@
 
     function mostrarTela(id) { document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa")); document.getElementById(id).classList.add("ativa"); }
     
-    function sairConta() {
+   function sairConta() {
         document.body.classList.remove('is-test');
         grupoAtual = "";
+        
+        // Reseta o controle para que o próximo grupo que fizer login comece com telas em branco
+        if (typeof pratRendered !== 'undefined') {
+            pratRendered = { p1: false, p2: false, p3: false, p4: false };
+        }
+        
         mostrarTela('inicio');
     }
 
@@ -464,11 +470,26 @@
         });
     }
 
+    // Variável para controlar se a prática já foi renderizada na sessão atual
+    let pratRendered = { p1: false, p2: false, p3: false, p4: false };
+
     function abrirAtividade(idModulo) {
-        if (idModulo === "Prática 1") { document.getElementById("infoP1").value = ""; renderizarPratica1(); mostrarTela('pratica1'); } 
-        else if (idModulo === "Prática 2") { document.getElementById("infoP2").value = ""; renderizarPratica2(); mostrarTela('pratica2'); }
-        else if (idModulo === "Prática 3") { document.getElementById("infoP3").value = ""; renderizarPratica3(); mostrarTela('pratica3'); }
-        else if (idModulo === "Prática 4") { document.getElementById("infoP4").value = ""; renderizarPratica4(); mostrarTela('pratica4'); }
+        if (idModulo === "Prática 1") { 
+            if (!pratRendered.p1) { document.getElementById("infoP1").value = ""; renderizarPratica1(); pratRendered.p1 = true; }
+            mostrarTela('pratica1'); 
+        } 
+        else if (idModulo === "Prática 2") { 
+            if (!pratRendered.p2) { document.getElementById("infoP2").value = ""; renderizarPratica2(); pratRendered.p2 = true; }
+            mostrarTela('pratica2'); 
+        }
+        else if (idModulo === "Prática 3") { 
+            if (!pratRendered.p3) { document.getElementById("infoP3").value = ""; renderizarPratica3(); pratRendered.p3 = true; }
+            mostrarTela('pratica3'); 
+        }
+        else if (idModulo === "Prática 4") { 
+            if (!pratRendered.p4) { document.getElementById("infoP4").value = ""; renderizarPratica4(); pratRendered.p4 = true; }
+            mostrarTela('pratica4'); 
+        }
     }
 
     // ================= COMPONENTES ATUALIZADOS PARA TECLADO DE CELULAR =================
