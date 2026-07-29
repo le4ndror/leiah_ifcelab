@@ -120,8 +120,8 @@
             <h1>Instituto Federal - Maranguape</h1>
             <h2>Laboratório de Eletrônica Básica</h2>
             <div style="max-width: 400px; margin: 0 auto;">
-                <button onclick="mostrarTela('loginProfessor')">Portal do Professor</button>
-                <button class="btn-secundario" onclick="mostrarTela('loginGrupo')">Acesso de Alunos</button>
+                <button onclick="acaoVoltar()" class="btn-seta-topo">&#8592;</button>
+                <<button onclick="acaoVoltar()" class="btn-voltar">Voltar ao Menu</button>
             </div>
         </div>
 
@@ -456,34 +456,47 @@
     }
 
    // Adicione um segundo parâmetro chamado 'isVoltar'
-    function mostrarTela(idTela, isVoltar = false) {
-        
-        // 1. AQUI VAI O SEU CÓDIGO ATUAL QUE ESCONDE/MOSTRA AS TELAS
-        // (Geralmente é algo como pegar todas as telas, dar display 'none' 
-        // e dar display 'block' na tela com o idTela)
-        const telas = document.querySelectorAll('.tela'); // Adapte para a sua classe de telas
-        telas.forEach(tela => tela.style.display = 'none');
-        document.getElementById(idTela).style.display = 'block';
+    // 1. Ao carregar a página, marca a tela inicial no histórico do celular
+window.addEventListener('DOMContentLoaded', function() {
+    // IMPORTANTE: Mude 'escolhaGrupo' para o ID da sua tela principal/menu
+    history.replaceState({ tela: 'escolhaGrupo' }, "", "#escolhaGrupo");
+});
 
-        // 2. NOVO: Salva a tela no histórico do celular, se não for uma ação de voltar
-        if (!isVoltar) {
-            history.pushState({ tela: idTela }, "", "#" + idTela);
-        }
-        
-        // Mantém a rolagem no topo ao mudar de tela
-        window.scrollTo(0, 0); 
+// 2. Função principal para trocar de tela
+function mostrarTela(idTela, salvarHistorico = true) {
+    // Esconde todas as telas que possuem a classe 'tela'
+    const telas = document.querySelectorAll('.tela');
+    telas.forEach(tela => tela.style.display = 'none');
+
+    // Exibe apenas a tela solicitada
+    const telaAlvo = document.getElementById(idTela);
+    if (telaAlvo) {
+        telaAlvo.style.display = 'block';
     }
 
-    // 3. NOVO: Faz o botão físico de voltar do celular funcionar
-    window.addEventListener('popstate', function(event) {
-        if (event.state && event.state.tela) {
-            // Se tem histórico, volta para a tela anterior
-            mostrarTela(event.state.tela, true);
-        } else {
-            // Se não tiver, joga pro menu padrão (Mude para o ID do seu menu principal)
-            mostrarTela('escolhaGrupo', true); 
-        }
-    });
+    // Adiciona a tela ao histórico do celular apenas se for um clique normal
+    if (salvarHistorico && (!history.state || history.state.tela !== idTela)) {
+        history.pushState({ tela: idTela }, "", "#" + idTela);
+    }
+
+    window.scrollTo(0, 0);
+}
+
+// 3. Captura o clique no botão de voltar do celular/navegador
+window.addEventListener('popstate', function(event) {
+    if (event.state && event.state.tela) {
+        // Volta para a tela anterior SEM salvar novo histórico
+        mostrarTela(event.state.tela, false);
+    } else {
+        // Se não houver histórico, manda de volta para o menu inicial
+        mostrarTela('escolhaGrupo', false);
+    }
+});
+
+// 4. Função simples para a seta do topo e para os botões de voltar
+function acaoVoltar() {
+    history.back();
+});
     
    function sairConta() {
         document.body.classList.remove('is-test');
