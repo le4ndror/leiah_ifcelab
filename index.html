@@ -5,6 +5,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Laboratório - IFCE Maranguape</title>
+    <style>
+        /* Adicione esta regra ao seu .card existente */
+.card {
+    position: relative; /* Necessário para ancorar o botão no topo */
+    /* ... mantenha o restante do estilo do card igual ... */
+}
+
+/* Novo botão de voltar no topo */
+.btn-voltar-topo {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: none; /* Escondido por padrão na tela de início */
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    width: auto;
+    margin: 0;
+}
+
+.btn-voltar-topo:hover {
+    background: #f3f4f6;
+    color: var(--primary-color);
+}
+
+/* Ajuste no padding do card para mobile para o botão não sobrepor o título */
+@media (max-width: 600px) {
+    .card { padding: 60px 20px 20px 20px; }
+    .btn-voltar-topo { top: 15px; left: 10px; }
+}
+</style>
+</head>
+<body>
     
     <!-- TAGS DO APLICATIVO (PWA) -->
     <link rel="manifest" href="manifest.json">
@@ -85,6 +125,13 @@
 
 <div class="container">
     <div class="card">
+        <button id="btnVoltarTopo" class="btn-voltar-topo" onclick="voltarPagina()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5"></path>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Voltar
+        </button>
         <div id="inicio" class="tela ativa">
             <h1>Instituto Federal - Maranguape</h1>
             <h2>Laboratório de Eletrônica Básica</h2>
@@ -421,10 +468,43 @@
     function calcDeltaInterno(nominal, medido) {
         if (!nominal || nominal === 0) return 0; 
         return (((Math.abs(medido) - Math.abs(nominal)) / Math.abs(nominal)) * 100);
+
+        function voltarPagina() {
+            window.history.back(); 
+        }
+
+        window.addEventListener('popstate', function(event) {
+            if (event.state && event.state.tela) {
+                mostrarTela(event.state.tela, true);
+            } else {
+                mostrarTela('inicio', true);
+            }
+        });
+
+        // NA SUA FUNÇÃO DOMContentLoaded QUE JÁ EXISTE, ADICIONE APENAS A PRIMEIRA LINHA
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // Cole esta linha nova bem aqui no começo:
+            window.history.replaceState({ tela: 'inicio' }, "", "#inicio");
+            
+            /* ... O restante do seu código de carregar professores, alunos, 
+               tecla ENTER, etc., que já estava aqui dentro, continua intocado! ... */
+        });
     }
 
-    function mostrarTela(id) { document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa")); document.getElementById(id).classList.add("ativa"); }
-    
+function mostrarTela(id, vindoDoHistorico = false) { 
+            document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa")); 
+            document.getElementById(id).classList.add("ativa"); 
+
+            if (!vindoDoHistorico) {
+                window.history.pushState({ tela: id }, "", `#${id}`);
+            }
+
+            let btnTopo = document.getElementById("btnVoltarTopo");
+            if (btnTopo) {
+                btnTopo.style.display = (id === 'inicio') ? 'none' : 'flex';
+            }
+        }    
     function sairConta() {
         document.body.classList.remove('is-test');
         grupoAtual = "";
