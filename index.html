@@ -1171,6 +1171,45 @@
 });
 </script>
 <script>
+    // Detecta se o aluno minimizou o navegador ou trocou de aba
+document.addEventListener("visibilitychange", function() {
+    let grupo = sessionStorage.getItem("grupoAtual"); 
+    
+    if (grupo) {
+        let caminhoStatus = db.ref('SEU_CAMINHO_AQUI/' + grupo); // Lembre-se de trocar o caminho!
+        
+        if (document.hidden) {
+            // O aluno minimizou o app ou mudou de aba
+            caminhoStatus.set('Offline');
+        } else {
+            // O aluno voltou para a página do seu sistema
+            caminhoStatus.set('Online');
+            // Re-arma o onDisconnect caso ele perca a internet depois de voltar
+            caminhoStatus.onDisconnect().set('Offline');
+        }
+    }
+});
+</script>
+<script>
+    // Monitora a conexão contínua com o Firebase (Resolve o problema de funcionar só 1 vez)
+db.ref('.info/connected').on('value', function(snap) {
+    // Se for verdadeiro, significa que acabou de conectar ou reconectar
+    if (snap.val() === true) {
+        let grupo = sessionStorage.getItem("grupoAtual");
+        
+        if (grupo) {
+            let caminhoStatus = db.ref('SEU_CAMINHO_AQUI/' + grupo); // Lembre-se de trocar o caminho!
+            
+            // Avisa que está Online novamente
+            caminhoStatus.set('Online');
+            
+            // Arma o gatilho de queda de internet toda vez que reconectar
+            caminhoStatus.onDisconnect().set('Offline');
+        }
+    }
+});
+</script>
+<script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')
