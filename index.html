@@ -114,6 +114,12 @@
         hr { border: 0; border-top: 1px solid var(--border-color); margin: 30px 0; }
         .flex-row { display: flex; gap: 10px; margin-top: 8px; align-items: center; }
         .col-4 { flex: 1; }
+        /* Adicione junto com suas outras regras CSS, perto do @keyframes fadeIn */
+        @keyframes piscarAlerta {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
 
         /* AJUSTE PARA O CELULAR (Responsividade das tabelas de input) */
         @media (max-width: 600px) {
@@ -158,6 +164,12 @@
 
         <div id="menuProfessor" class="tela">
             <h1>Painel de Avaliação (Professor)</h1>
+            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 25px;">
+                <h2 style="margin-bottom: 15px; color: var(--text-main); border-bottom: 1px solid #ccc; padding-bottom: 5px;">📡 Status das Bancadas</h2>
+                <div id="listaStatusGrupos" style="max-height: 200px; overflow-y: auto; font-size: 0.95rem;">
+                    Aguardando dados...
+                </div>
+            </div>
             <div class="grid-cards" id="gridProf"></div>
             <hr>
             <button onclick="sairConta()" class="btn-voltar" style="max-width: 300px; margin: 0 auto; display: block;">Encerrar Sessão</button>
@@ -302,7 +314,11 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        window.history.replaceState({ tela: 'inicio' }, "", "#inicio");
+        // 1. RECUPERA SESSÃO AO ATUALIZAR A PÁGINA (F5)
+        grupoAtual = sessionStorage.getItem('grupoAtual') || "";
+        if(sessionStorage.getItem('isTest') === 'true') document.body.classList.add('is-test');
+        let isProfLogado = sessionStorage.getItem('isProfLogado') === 'true';
+
         let profHtml = ""; let alunoHtml = "";
         modulosPraticas.forEach(m => {
             profHtml += `<div class="module-card" onclick="mostrarRegistros('${m.id}')"><div class="module-img" style="background-image: url('${m.img}');"></div><div class="module-title">${m.titulo}</div></div>`;
@@ -312,16 +328,123 @@
         document.getElementById("gridAluno").innerHTML = alunoHtml;
 
         // ENTER KEY LISTENERS
-        document.getElementById("senhaProfessor").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") entrarProfessor();
-        });
-        document.getElementById("nomeGrupo").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") entrarGrupo();
-        });
-        document.getElementById("senhaGrupo").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") entrarGrupo();
-        });
+        document.getElementById("senhaProfessor").addEventListener("keypress", e => { if (e.key === "Enter") entrarProfessor(); });
+        document.getElementById("nomeGrupo").addEventListener("keypress", e => { if (e.key === "Enter") entrarGrupo(); });
+        document.getElementById("senhaGrupo").addEventListener("keypress", e => { if (e.key === "Enter") entrarGrupo(); });
+
+        // 2. VERIFICA EM QUAL TELA ESTÁVAMOS ANTES DE ATUALIZAR
+        let hashTela = window.location.hash.replace('#', '');
+        let telaDestino = 'inicio';
+
+        if (hashTela && document.getElementById(hashTela)) {
+            // Se tentar acessar área de aluno sem grupo logado na sessão, joga pro login
+            if (hashTela.includes('pratica') || hashTela === 'escolhaGrupo' || hashTela === 'resultadoGrupo') {
+                telaDestino = grupoAtual ? hashTela : 'loginGrupo';
+            } 
+            // Se tentar acessar área do professor sem estar logado na sessão, joga pro login
+            else if (hashTela === 'menuProfessor' || hashTela === 'listaProfessor') {
+                telaDestino = isProfLogado ? hashTela : 'loginProfessor';
+            } else {
+                telaDestino = hashTela;
+            }
+        }
+
+        // 3. ABRE A TELA CORRETA
+        if (telaDestino.includes('pratica')) {
+            let numeroPratica = telaDestino.replace('pratica', ''); // Pega o número da URL
+            abrirAtividade('Prática ' + numeroPratica);
+        } else {
+            mostrarTela(telaDestino, true);
+        }
+
+        if (isProfLogado) monitorarStatusEmTempoReal();
     });
+
+    function sairConta() {
+        // Se for aluno saindo, avisa ao Firebase que ele ficou Offline
+        if (grupoAtual !== "") {
+            db.ref('statusTurmaIF/' + grupoAtual).update({ 
+                status: 'Offline', timestamp: firebase.database.ServerValue.TIMESTAMP 
+            });
+        }
+        
+        document.body.classList.remove('is-test');
+        grupoAtual = "";
+        
+        // Limpa a memória do F5
+        sessionStorage.removeItem('grupoAtual');
+        sessionStorage.removeItem('isTest');
+        sessionStorage.removeItem('isProfLogado');
+        
+        praticasRenderizadas = { p1: false, p2: false, p3: false, p4: false };
+        document.getElementById("p1_resistores").innerHTML = "";
+        document.getElementById("p2_resistores").innerHTML = "";
+        document.getElementById("p3_resistores").innerHTML = "";
+        document.getElementById("p4_resistores").innerHTML = "";
+        if(document.getElementById("infoP1")) document.getElementById("infoP1").value = "";
+        if(document.getElementById("infoP2")) document.getElementById("infoP2").value = "";
+        if(document.getElementById("infoP3")) document.getElementById("infoP3").value = "";
+        if(document.getElementById("infoP4")) document.getElementById("infoP4").value = "";
+
+        mostrarTela('inicio');
+    }
+
+    function entrarProfessor() {
+        let s = document.getElementById("senhaProfessor");
+        if (s.value === "eletroif") { 
+            s.value = ""; 
+            sessionStorage.setItem('isProfLogado', 'true'); // Salva para o F5
+            mostrarTela("menuProfessor"); 
+            monitorarStatusEmTempoReal(); // Inicia o monitoramento
+        } else { 
+            alert("Credencial inválida."); 
+        }
+    }
+    
+    function entrarGrupo() {
+        let nome = document.getElementById("nomeGrupo").value.trim(), senha = document.getElementById("senhaGrupo").value;
+        if (!nome || !senha) return alert("Preencha as credenciais.");
+
+        if (nome === "testelw" && senha === "54321") {
+            grupoAtual = nome;
+            sessionStorage.setItem('grupoAtual', nome);
+            sessionStorage.setItem('isTest', 'true');
+            document.body.classList.add('is-test'); 
+            registrarPresencaOnline(nome);
+            mostrarTela("escolhaGrupo");
+            return;
+        }
+
+        document.body.classList.remove('is-test'); 
+        let btn = event.target; 
+        let txt = "Autenticando..."; 
+        if(btn && btn.tagName === "BUTTON") { txt = btn.innerText; btn.innerText = "Autenticando..."; btn.disabled = true; }
+        
+        db.ref('gruposIF/' + nome).once('value').then(snap => {
+            let saved = snap.val();
+            if (!saved || saved === senha) { 
+                if(!saved) db.ref('gruposIF/' + nome).set(senha); 
+                
+                grupoAtual = nome; 
+                sessionStorage.setItem('grupoAtual', nome); // Salva para o F5
+                registrarPresencaOnline(nome); // Manda pro Prof que logou
+                mostrarTela("escolhaGrupo"); 
+            }
+            else { alert("Senha incorreta."); }
+            if(btn && btn.tagName === "BUTTON") { btn.innerText = txt; btn.disabled = false; }
+        }).catch(err => { 
+            alert("Erro de conexão."); 
+            if(btn && btn.tagName === "BUTTON") { btn.innerText = txt; btn.disabled = false; } 
+        });
+    }
+
+    // Função auxiliar para marcar o aluno como online assim que loga
+    function registrarPresencaOnline(nomeGrupo) {
+        let ref = db.ref('statusTurmaIF/' + nomeGrupo);
+        ref.set({ status: 'Online', timestamp: firebase.database.ServerValue.TIMESTAMP });
+        // Se a internet do aluno cair ou ele fechar o navegador, o Firebase acusa Offline sozinho:
+        ref.onDisconnect().update({ status: 'Offline', timestamp: firebase.database.ServerValue.TIMESTAMP });
+    }
 
     // ================= FUNÇÃO DE AUTOPREENCHIMENTO PARA TESTE =================
     function executarTeste(num) {
@@ -1024,22 +1147,58 @@
     }
 </script>
 <script>
-    document.addEventListener("visibilitychange", function() {
+    // ==========================================
+    // FUNÇÃO QUE ATUALIZA O PAINEL DO PROFESSOR
+    // ==========================================
+    function monitorarStatusEmTempoReal() {
+        db.ref('statusTurmaIF').on('value', snap => {
+            let container = document.getElementById('listaStatusGrupos');
+            if(!container) return;
+            let dados = snap.val();
+            let html = '';
             
-            // Verifica se o aluno saiu da tela E se ele está logado em um grupo
-            if (document.hidden && grupoAtual !== "") {
-                
-                // O aluno saiu do app (foi pro WhatsApp, desligou a tela, etc)
-                alert("Atenção! O sistema detectou que o " + grupoAtual + " saiu do aplicativo durante a aula. Mantenha o foco na atividade!");
-                console.warn("⚠️ " + grupoAtual + " saiu do aplicativo!");
-
-            } else if (!document.hidden && grupoAtual !== "") {
-                
-                // O aluno voltou para o app
-                console.log("✅ " + grupoAtual + " voltou para o aplicativo.");
-                
+            if(dados) {
+                for(let nomeGrupo in dados) {
+                    let s = dados[nomeGrupo];
+                    let cor = s.status === 'Online' ? '#10b981' : (s.status.includes('Ausente') ? '#ef4444' : '#6b7280');
+                    let estilo = s.status.includes('Ausente') ? 'animation: piscarAlerta 1.5s infinite;' : '';
+                    
+                    html += `<div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb; align-items: center;">
+                                <strong>${nomeGrupo}</strong> 
+                                <span style="color: ${cor}; font-weight: 600; background: ${cor}15; padding: 4px 10px; border-radius: 6px; ${estilo}">${s.status}</span>
+                             </div>`;
+                }
+            } else {
+                html = '<div class="desc">Nenhuma bancada conectada ainda.</div>';
             }
+            container.innerHTML = html;
         });
+    }
+
+    // ==========================================
+    // DETECTOR DO ALUNO SAINDO DO APLICATIVO
+    // ==========================================
+    document.addEventListener("visibilitychange", function() {
+        // Só faz a verificação se for um Aluno e se ele já estiver logado
+        if (grupoAtual !== "") {
+            let refStatus = db.ref('statusTurmaIF/' + grupoAtual);
+            
+            if (document.hidden) {
+                // Aluno minimizou o navegador ou mudou de aba
+                alert("Atenção! O sistema detectou que o " + grupoAtual + " saiu do aplicativo durante a aula. Mantenha o foco na atividade!");
+                refStatus.update({ 
+                    status: '⚠️ Ausente (Saiu da Aba)', 
+                    timestamp: firebase.database.ServerValue.TIMESTAMP 
+                });
+            } else {
+                // Aluno voltou para a aba
+                refStatus.update({ 
+                    status: 'Online', 
+                    timestamp: firebase.database.ServerValue.TIMESTAMP 
+                });
+            }
+        }
+    });
 </script>
 <script>
   if ('serviceWorker' in navigator) {
