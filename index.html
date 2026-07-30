@@ -402,41 +402,49 @@
     }
     
     function entrarGrupo() {
-        let nome = document.getElementById("nomeGrupo").value.trim(), senha = document.getElementById("senhaGrupo").value;
-        if (!nome || !senha) return alert("Preencha as credenciais.");
+    let nome = document.getElementById("nomeGrupo").value.trim(), senha = document.getElementById("senhaGrupo").value;
+    if (!nome || !senha) return alert("Preencha as credenciais.");
 
-        if (nome === "testelw" && senha === "54321") {
-            grupoAtual = nome;
-            sessionStorage.setItem('grupoAtual', nome);
-            sessionStorage.setItem('isTest', 'true');
-            document.body.classList.add('is-test'); 
-            registrarPresencaOnline(nome);
-            mostrarTela("escolhaGrupo");
-            return;
-        }
-
-        document.body.classList.remove('is-test'); 
-        let btn = event.target; 
-        let txt = "Autenticando..."; 
-        if(btn && btn.tagName === "BUTTON") { txt = btn.innerText; btn.innerText = "Autenticando..."; btn.disabled = true; }
+    if (nome === "testelw" && senha === "54321") {
+        grupoAtual = nome;
+        sessionStorage.setItem('grupoAtual', nome);
+        sessionStorage.setItem('isTest', 'true');
+        document.body.classList.add('is-test'); 
+        registrarPresencaOnline(nome);
         
-        db.ref('gruposIF/' + nome).once('value').then(snap => {
-            let saved = snap.val();
-            if (!saved || saved === senha) { 
-                if(!saved) db.ref('gruposIF/' + nome).set(senha); 
-                
-                grupoAtual = nome; 
-                sessionStorage.setItem('grupoAtual', nome); // Salva para o F5
-                registrarPresencaOnline(nome); // Manda pro Prof que logou
-                mostrarTela("escolhaGrupo"); 
-            }
-            else { alert("Senha incorreta."); }
-            if(btn && btn.tagName === "BUTTON") { btn.innerText = txt; btn.disabled = false; }
-        }).catch(err => { 
-            alert("Erro de conexão."); 
-            if(btn && btn.tagName === "BUTTON") { btn.innerText = txt; btn.disabled = false; } 
-        });
+        // NOVO: Avisa o Firebase para marcar Offline se a conexão cair (Conta Teste)
+        db.ref('status/' + nome).onDisconnect().set('Offline');
+
+        mostrarTela("escolhaGrupo");
+        return;
     }
+
+    document.body.classList.remove('is-test'); 
+    let btn = event.target; 
+    let txt = "Autenticando..."; 
+    if(btn && btn.tagName === "BUTTON") { txt = btn.innerText; btn.innerText = "Autenticando..."; btn.disabled = true; }
+    
+    db.ref('gruposIF/' + nome).once('value').then(snap => {
+        let saved = snap.val();
+        if (!saved || saved === senha) { 
+            if(!saved) db.ref('gruposIF/' + nome).set(senha); 
+            
+            grupoAtual = nome; 
+            sessionStorage.setItem('grupoAtual', nome); // Salva para o F5
+            registrarPresencaOnline(nome); // Manda pro Prof que logou
+
+            // NOVO: Avisa o Firebase para marcar Offline se a conexão cair (Alunos Oficiais)
+            db.ref('status/' + nome).onDisconnect().set('Offline');
+
+            mostrarTela("escolhaGrupo"); 
+        }
+        else { alert("Senha incorreta."); }
+        if(btn && btn.tagName === "BUTTON") { btn.innerText = txt; btn.disabled = false; }
+    }).catch(err => { 
+        alert("Erro de conexão."); 
+        if(btn && btn.tagName === "BUTTON") { btn.innerText = txt; btn.disabled = false; } 
+    });
+}
 
     // Função auxiliar para marcar o aluno como online assim que loga
     function registrarPresencaOnline(nomeGrupo) {
@@ -1150,6 +1158,17 @@
             }
         }
     });
+</script>
+<script>
+    window.addEventListener("beforeunload", function (e) {
+    // Pega o nome do grupo atual do sessionStorage (ou da sua variável)
+    let grupo = sessionStorage.getItem("grupoAtual") || grupoAtual; 
+    
+    if (grupo) {
+        // Manda o status para Offline na hora que a aba é fechada
+        db.ref('seuCaminhoDeStatus/' + grupo).set('Offline');
+    }
+});
 </script>
 <script>
   if ('serviceWorker' in navigator) {
