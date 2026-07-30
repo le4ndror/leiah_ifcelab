@@ -1134,80 +1134,89 @@
         });
     }
 
+   <script>
     // ==========================================
-    // DETECTOR DO ALUNO SAINDO DO APLICATIVO
+    // SISTEMA UNIFICADO DE STATUS (TEMPO REAL)
     // ==========================================
-    document.addEventListener("visibilitychange", function() {
-        // Só faz a verificação se for um Aluno e se ele já estiver logado
-        if (grupoAtual !== "") {
-            let refStatus = db.ref('statusTurmaIF/' + grupoAtual);
+
+    // 1. Monitora a conexão contínua com o Firebase (Resolve quedas de energia/internet)
+    db.ref('.info/connected').on('value', function(snap) {
+        if (snap.val() === true) {
+            let grupo = sessionStorage.getItem('grupoAtual') || grupoAtual;
             
-            if (document.hidden) {
-                // Aluno minimizou o navegador ou mudou de aba
-                alert("Atenção! O sistema detectou que o " + grupoAtual + " saiu do aplicativo durante a aula. Mantenha o foco na atividade!");
-                refStatus.update({ 
-                    status: '⚠️ Ausente (Saiu da Aba)', 
-                    timestamp: firebase.database.ServerValue.TIMESTAMP 
-                });
-            } else {
-                // Aluno voltou para a aba
+            if (grupo) {
+                let refStatus = db.ref('statusTurmaIF/' + grupo);
+                
+                // Define como online assim que conectar
                 refStatus.update({ 
                     status: 'Online', 
+                    timestamp: firebase.database.ServerValue.TIMESTAMP 
+                });
+                
+                // "Arma" o Firebase do lado do servidor para mudar para Offline se a conexão cair
+                refStatus.onDisconnect().update({ 
+                    status: 'Offline', 
                     timestamp: firebase.database.ServerValue.TIMESTAMP 
                 });
             }
         }
     });
-</script>
-<script>
-    window.addEventListener("beforeunload", function (e) {
-    // Pega o nome do grupo atual do sessionStorage (ou da sua variável)
-    let grupo = sessionStorage.getItem("grupoAtual") || grupoAtual; 
-    
-    if (grupo) {
-        // Manda o status para Offline na hora que a aba é fechada
-        db.ref('seuCaminhoDeStatus/' + grupo).set('Offline');
-    }
-});
-</script>
-<script>
-    // Detecta se o aluno minimizou o navegador ou trocou de aba
-document.addEventListener("visibilitychange", function() {
-    let grupo = sessionStorage.getItem("grupoAtual"); 
-    
-    if (grupo) {
-        let caminhoStatus = db.ref('SEU_CAMINHO_AQUI/' + grupo); // Lembre-se de trocar o caminho!
-        
-        if (document.hidden) {
-            // O aluno minimizou o app ou mudou de aba
-            caminhoStatus.set('Offline');
-        } else {
-            // O aluno voltou para a página do seu sistema
-            caminhoStatus.set('Online');
-            // Re-arma o onDisconnect caso ele perca a internet depois de voltar
-            caminhoStatus.onDisconnect().set('Offline');
-        }
-    }
-});
-</script>
-<script>
-    // Monitora a conexão contínua com o Firebase (Resolve o problema de funcionar só 1 vez)
-db.ref('.info/connected').on('value', function(snap) {
-    // Se for verdadeiro, significa que acabou de conectar ou reconectar
-    if (snap.val() === true) {
-        let grupo = sessionStorage.getItem("grupoAtual");
+
+    // 2. Detecta se o aluno minimizou o navegador ou trocou de aba
+    document.addEventListener("visibilitychange", function() {
+        let grupo = sessionStorage.getItem('grupoAtual') || grupoAtual;
         
         if (grupo) {
-            let caminhoStatus = db.ref('SEU_CAMINHO_AQUI/' + grupo); // Lembre-se de trocar o caminho!
+            let refStatus = db.ref('statusTurmaIF/' + grupo);
             
-            // Avisa que está Online novamente
-            caminhoStatus.set('Online');
-            
-            // Arma o gatilho de queda de internet toda vez que reconectar
-            caminhoStatus.onDisconnect().set('Offline');
+            if (document.hidden) {
+                // Aluno mudou de aba ou minimizou. 
+                // NUNCA use alert() aqui, pois quebra a atualização (F5) da página.
+                refStatus.update({ 
+                    status: '⚠️ Ausente (Saiu da Aba)', 
+                    timestamp: firebase.database.ServerValue.TIMESTAMP 
+                });
+            } else {
+                // Aluno voltou para a aba principal
+                refStatus.update({ 
+                    status: 'Online', 
+                    timestamp: firebase.database.ServerValue.TIMESTAMP 
+                });
+                
+                // Exibe o alerta apenas quando ele VOLTA para a tela, evitando travamentos
+                setTimeout(() => {
+                    alert("Atenção! O sistema detectou que você saiu da aba durante a aula. Mantenha o foco na atividade!");
+                }, 500); // Um pequeno delay para garantir que a página renderizou
+            }
         }
-    }
-});
+    });
+
+    // 3. Força o status para Offline ao fechar a guia ou recarregar (F5)
+    window.addEventListener("beforeunload", function (e) {
+        let grupo = sessionStorage.getItem("grupoAtual") || grupoAtual; 
+        
+        if (grupo) {
+            db.ref('statusTurmaIF/' + grupo).update({ 
+                status: 'Offline', 
+                timestamp: firebase.database.ServerValue.TIMESTAMP 
+            });
+        }
+    });
+</script>
+
+<script>
+  // Registro do Service Worker (PWA) mantido intacto
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(registration => {
+          console.log('Service Worker registrado com sucesso:', registration);
+        })
+        .catch(error => {
+          console.log('Falha ao registrar o Service Worker:', error);
+        });
+    });
+  }
 </script>
 <script>
   if ('serviceWorker' in navigator) {
