@@ -627,56 +627,7 @@
     }
 
 
-    function sairConta() {
-        document.body.classList.remove('is-test');
-        grupoAtual = "";
-        
-        // (Opcional) Reseta o controle para gerar formulários limpos no próximo login
-        praticasRenderizadas = { p1: false, p2: false, p3: false, p4: false };
-        document.getElementById("p1_resistores").innerHTML = "";
-        document.getElementById("p2_resistores").innerHTML = "";
-        document.getElementById("p3_resistores").innerHTML = "";
-        document.getElementById("p4_resistores").innerHTML = "";
-        if(document.getElementById("infoP1")) document.getElementById("infoP1").value = "";
-        if(document.getElementById("infoP2")) document.getElementById("infoP2").value = "";
-        if(document.getElementById("infoP3")) document.getElementById("infoP3").value = "";
-        if(document.getElementById("infoP4")) document.getElementById("infoP4").value = "";
-
-        mostrarTela('inicio');
-    }
-
-    function entrarProfessor() {
-        let s = document.getElementById("senhaProfessor");
-        if (s.value === "eletroif") { s.value = ""; mostrarTela("menuProfessor"); } else { alert("Credencial inválida."); }
-    }
     
-    function entrarGrupo() {
-        let nome = document.getElementById("nomeGrupo").value.trim(), senha = document.getElementById("senhaGrupo").value;
-        if (!nome || !senha) return alert("Preencha as credenciais.");
-
-        if (nome === "testelw" && senha === "54321") {
-            grupoAtual = nome;
-            document.body.classList.add('is-test'); 
-            mostrarTela("escolhaGrupo");
-            return;
-        }
-
-        document.body.classList.remove('is-test'); 
-        let btn = event.target; 
-        let txt = "Autenticando..."; 
-        if(btn && btn.tagName === "BUTTON") { txt = btn.innerText; btn.innerText = "Autenticando..."; btn.disabled = true; }
-        
-        db.ref('gruposIF/' + nome).once('value').then(snap => {
-            let saved = snap.val();
-            if (!saved) { db.ref('gruposIF/' + nome).set(senha); grupoAtual = nome; mostrarTela("escolhaGrupo"); }
-            else if (saved === senha) { grupoAtual = nome; mostrarTela("escolhaGrupo"); }
-            else { alert("Senha incorreta."); }
-            if(btn && btn.tagName === "BUTTON") { btn.innerText = txt; btn.disabled = false; }
-        }).catch(err => { 
-            alert("Erro de conexão."); 
-            if(btn && btn.tagName === "BUTTON") { btn.innerText = txt; btn.disabled = false; } 
-        });
-    }
 
     // Variável para controlar se a prática já foi desenhada na tela
     let praticasRenderizadas = { p1: false, p2: false, p3: false, p4: false };
