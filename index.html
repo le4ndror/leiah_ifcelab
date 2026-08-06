@@ -418,6 +418,7 @@
     async function entrarGrupo() {
     let nome = document.getElementById("nomeGrupo").value.trim(), senha = document.getElementById("senhaGrupo").value;
     if (!nome || !senha) return alert("Preencha as credenciais.");
+    let btn = (typeof event !== 'undefined' && event) ? event.target : null;
     let senhaHash = await hashSenha(senha);
 
     if (nome === "testelw" && senhaHash === HASH_SENHA_TESTE) {
@@ -435,7 +436,6 @@
     }
 
     document.body.classList.remove('is-test'); 
-    let btn = event.target; 
     let txt = "Autenticando..."; 
     if(btn && btn.tagName === "BUTTON") { txt = btn.innerText; btn.innerText = "Autenticando..."; btn.disabled = true; }
     
