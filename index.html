@@ -135,6 +135,31 @@
         .resistor-dinamico::before, .resistor-dinamico::after { content: ""; position: absolute; width: 50px; height: 6px; background: #9ca3af; top: 22px; }
         .resistor-dinamico::before { left: -50px; } .resistor-dinamico::after { right: -50px; }
         .faixa-dinamica { position: absolute; width: 10%; height: 100%; border: 1px solid rgba(0,0,0,0.1); }
+        
+        /* Estilos para botão de remoção de status */
+        .btn-remover-status {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            color: #6b7280;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 0;
+            margin-left: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .btn-remover-status:hover {
+            background: #ef4444;
+            border-color: #dc2626;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -1112,23 +1137,124 @@
     // ==========================================
     // FUNÇÃO QUE ATUALIZA O PAINEL DO PROFESSOR
     // ==========================================
+    
+    // Constante para controle de localStorage
+    const STORAGE_KEY = 'gruposDescartadosStatus';
+    
+    // Função auxiliar: Obter grupos descartados do localStorage
+    function getGruposDescartados() {
+        try {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : {};
+        } catch (e) {
+            console.error('Erro ao ler localStorage:', e);
+            return {};
+        }
+    }
+    
+    // Função auxiliar: Salvar grupos descartados no localStorage
+    function salvarGrupoDescartado(nomeGrupo) {
+        try {
+            const descartados = getGruposDescartados();
+            descartados[nomeGrupo] = Date.now(); // Timestamp exato da remoção
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(descartados));
+        } catch (e) {
+            console.error('Erro ao salvar no localStorage:', e);
+        }
+    }
+    
+    // Função auxiliar: Remover grupo do localStorage (quando reconectar)
+    function removerGrupoDescartado(nomeGrupo) {
+        try {
+            const descartados = getGruposDescartados();
+            delete descartados[nomeGrupo];
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(descartados));
+        } catch (e) {
+            console.error('Erro ao remover do localStorage:', e);
+        }
+    }
+    
+    // Função principal: Remover grupo da visualização (botão X)
+    function removerStatusVisual(nomeGrupo) {
+        // Salva no localStorage com timestamp
+        salvarGrupoDescartado(nomeGrupo);
+        
+        // Remove imediatamente da DOM
+        const container = document.getElementById('listaStatusGrupos');
+        if(container) {
+            const elementos = container.querySelectorAll('[data-grupo]');
+            elementos.forEach(el => {
+                if(el.getAttribute('data-grupo') === nomeGrupo) {
+                    el.remove();
+                }
+            });
+            
+            // Verifica se ficou vazio
+            if(container.children.length === 0 || container.innerText.trim() === '') {
+                container.innerHTML = '<div class="desc">Nenhuma bancada conectada ainda.</div>';
+            }
+        }
+    }
+    
+    // Função principal: Monitorar status em tempo real com lógica de descarte
     function monitorarStatusEmTempoReal() {
         db.ref('statusTurmaIF').on('value', snap => {
             let container = document.getElementById('listaStatusGrupos');
             if(!container) return;
             let dados = snap.val();
             let html = '';
+            let gruposDescartados = getGruposDescartados();
             
             if(dados) {
+                let gruposVisiveis = 0;
+                
                 for(let nomeGrupo in dados) {
                     let s = dados[nomeGrupo];
-                    let cor = s.status === 'Online' ? '#10b981' : (s.status.includes('Ausente') ? '#ef4444' : '#6b7280');
-                    let estilo = s.status.includes('Ausente') ? 'animation: piscarAlerta 1.5s infinite;' : '';
+                    let timestampGrupo = s.timestamp || 0;
+                    let descartadoEm = gruposDescartados[nomeGrupo] || 0;
                     
-                    html += `<div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb; align-items: center;">
-                                <strong>${nomeGrupo}</strong> 
-                                <span style="color: ${cor}; font-weight: 600; background: ${cor}15; padding: 4px 10px; border-radius: 6px; ${estilo}">${s.status}</span>
-                             </div>`;
+                    // Lógica de reconexão: Se o grupo está online ou teve atividade recente após o descarte
+                    let isOnline = s.status === 'Online';
+                    let reconectou = timestampGrupo > descartadoEm;
+                    
+                    // Se reconectou, remove do localStorage
+                    if(reconectou && descartadoEm > 0) {
+                        removerGrupoDescartado(nomeGrupo);
+                        descartadoEm = 0; // Atualiza variável local
+                    }
+                    
+                    // Renderiza apenas se:
+                    // 1. O grupo está online, OU
+                    // 2. O grupo está offline mas não foi descartado, OU
+                    // 3. O grupo reconectou após ser descartado
+                    if(isOnline || descartadoEm === 0 || reconectou) {
+                        let cor = s.status === 'Online' ? '#10b981' : (s.status.includes('Ausente') ? '#ef4444' : '#6b7280');
+                        let estilo = s.status.includes('Ausente') ? 'animation: piscarAlerta 1.5s infinite;' : '';
+                        
+                        // Botão X visível apenas quando offline
+                        let botaoRemover = (!isOnline) ? 
+                            `<button onclick="removerStatusVisual('${nomeGrupo}')" 
+                                    class="btn-remover-status"
+                                    title="Remover da lista">✕</button>` : '';
+                        
+                        html += `<div data-grupo="${nomeGrupo}" 
+                                    style="display: flex; justify-content: space-between; 
+                                           padding: 10px 0; border-bottom: 1px solid #e5e7eb; 
+                                           align-items: center;">
+                                    <strong>${nomeGrupo}</strong> 
+                                    <div style="display: flex; align-items: center;">
+                                        <span style="color: ${cor}; font-weight: 600; 
+                                                      background: ${cor}15; padding: 4px 10px; 
+                                                      border-radius: 6px; ${estilo}">${s.status}</span>
+                                        ${botaoRemover}
+                                    </div>
+                                 </div>`;
+                        gruposVisiveis++;
+                    }
+                }
+                
+                if(gruposVisiveis === 0) {
+                    html = '<div class="desc">Nenhuma bancada conectada ainda.</div>';
                 }
             } else {
                 html = '<div class="desc">Nenhuma bancada conectada ainda.</div>';
