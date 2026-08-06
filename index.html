@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -135,6 +137,7 @@
         .faixa-dinamica { position: absolute; width: 10%; height: 100%; border: 1px solid rgba(0,0,0,0.1); }
     </style>
 </head>
+<body>
 <div class="container">
     <div class="card">
         <button id="btnVoltarTopo" class="btn-voltar-topo" onclick="voltarPagina()">
@@ -297,6 +300,17 @@
     
     let grupoAtual = ""; window.dadosProfessor = []; 
 
+    // ================= SEGURANÇA: HASH DE SENHAS (SHA-256) =================
+    // As senhas não ficam mais em texto puro no código nem no banco de dados.
+    async function hashSenha(senha) {
+        const data = new TextEncoder().encode(senha);
+        const buf = await crypto.subtle.digest('SHA-256', data);
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    const HASH_SENHA_PROFESSOR = "b98fa8019f3a49b8e9db23e42215d4454689e09e9ddaa0e571d9826de151e9fa";
+    const HASH_SENHA_TESTE = "20f3765880a5c269b747e1e906054a4b4a3a991259f1e16b5dde4742cec2319a";
+
     const modulosPraticas = [
         { id: "Prática 1", titulo: "Prática 1: Associação de Resistores", img: "https://eletroagora.com.br/wp-content/uploads/2024/01/circuito-eletrico-eletroagora.png" },
         { id: "Prática 2", titulo: "Prática 2: Leis de Kirchhoff", img: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=400&q=80" },
@@ -389,9 +403,9 @@
         mostrarTela('inicio');
     }
 
-    function entrarProfessor() {
+    async function entrarProfessor() {
         let s = document.getElementById("senhaProfessor");
-        if (s.value === "eletroif") { 
+        if (await hashSenha(s.value) === HASH_SENHA_PROFESSOR) { 
             s.value = ""; 
             sessionStorage.setItem('isProfLogado', 'true'); // Salva para o F5
             mostrarTela("menuProfessor"); 
@@ -401,11 +415,12 @@
         }
     }
     
-    function entrarGrupo() {
+    async function entrarGrupo() {
     let nome = document.getElementById("nomeGrupo").value.trim(), senha = document.getElementById("senhaGrupo").value;
     if (!nome || !senha) return alert("Preencha as credenciais.");
+    let senhaHash = await hashSenha(senha);
 
-    if (nome === "testelw" && senha === "54321") {
+    if (nome === "testelw" && senhaHash === HASH_SENHA_TESTE) {
         grupoAtual = nome;
         sessionStorage.setItem('grupoAtual', nome);
         sessionStorage.setItem('isTest', 'true');
@@ -426,8 +441,9 @@
     
     db.ref('gruposIF/' + nome).once('value').then(snap => {
         let saved = snap.val();
-        if (!saved || saved === senha) { 
-            if(!saved) db.ref('gruposIF/' + nome).set(senha); 
+        // Compara pelo hash; aceita senhas antigas em texto puro e as migra para hash
+        if (!saved || saved === senhaHash || saved === senha) { 
+            if(!saved || saved === senha) db.ref('gruposIF/' + nome).set(senhaHash); 
             
             grupoAtual = nome; 
             sessionStorage.setItem('grupoAtual', nome); // Salva para o F5
