@@ -452,9 +452,6 @@
         sessionStorage.setItem('isTest', 'true');
         document.body.classList.add('is-test'); 
         registrarPresencaOnline(nome);
-        
-        // NOVO: Avisa o Firebase para marcar Offline se a conexão cair (Conta Teste)
-        db.ref('status/' + nome).onDisconnect().set('Offline');
 
         mostrarTela("escolhaGrupo");
         return;
@@ -473,9 +470,6 @@
             grupoAtual = nome; 
             sessionStorage.setItem('grupoAtual', nome); // Salva para o F5
             registrarPresencaOnline(nome); // Manda pro Prof que logou
-
-            // NOVO: Avisa o Firebase para marcar Offline se a conexão cair (Alunos Oficiais)
-            db.ref('status/' + nome).onDisconnect().set('Offline');
 
             mostrarTela("escolhaGrupo"); 
         }
@@ -1228,19 +1222,21 @@
                     
                     // Lógica de reconexão: Se o grupo está online ou teve atividade recente após o descarte
                     let isOnline = s.status === 'Online';
+                    let isAusente = s.status.includes('Ausente');
                     let reconectou = timestampGrupo > descartadoEm;
                     
-                    // Se reconectou, remove do localStorage
-                    if(reconectou && descartadoEm > 0) {
+                    // Se reconectou (ou está online), remove do localStorage
+                    if((isOnline || reconectou) && descartadoEm > 0) {
                         removerGrupoDescartado(nomeGrupo);
                         descartadoEm = 0; // Atualiza variável local
                     }
                     
                     // Renderiza apenas se:
                     // 1. O grupo está online, OU
-                    // 2. O grupo está offline mas não foi descartado, OU
-                    // 3. O grupo reconectou após ser descartado
-                    if(isOnline || descartadoEm === 0 || reconectou) {
+                    // 2. O grupo está ausente (saiu da aba), OU
+                    // 3. O grupo está offline mas não foi descartado, OU
+                    // 4. O grupo reconectou após ser descartado
+                    if(isOnline || isAusente || descartadoEm === 0 || reconectou) {
                         let cor = s.status === 'Online' ? '#10b981' : (s.status.includes('Ausente') ? '#ef4444' : '#6b7280');
                         let estilo = s.status.includes('Ausente') ? 'animation: piscarAlerta 1.5s infinite;' : '';
                         
@@ -1295,11 +1291,7 @@
                     timestamp: firebase.database.ServerValue.TIMESTAMP 
                 });
                 
-                // "Arma" o Firebase do lado do servidor para mudar para Offline se a conexão cair
-                refStatus.onDisconnect().update({ 
-                    status: 'Offline', 
-                    timestamp: firebase.database.ServerValue.TIMESTAMP 
-                });
+                // Nota: onDisconnect já está configurado na função registrarPresencaOnline()
             }
         }
     });
