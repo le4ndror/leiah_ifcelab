@@ -233,19 +233,19 @@ document.addEventListener("DOMContentLoaded", () => {
 window.sairConta = function() {
     // Se for aluno saindo, avisa ao Firebase que ele ficou Offline
     if (grupoAtual !== "") {
-        db.ref('statusTurmaIF/' + grupoAtual).update({ 
-            status: 'Offline', timestamp: firebase.database.ServerValue.TIMESTAMP 
+        db.ref('statusTurmaIF/' + grupoAtual).update({
+            status: 'Offline', timestamp: firebase.database.ServerValue.TIMESTAMP
         });
     }
-    
+
     document.body.classList.remove('is-test');
     grupoAtual = "";
-    
+
     // Limpa a memória do F5
     sessionStorage.removeItem('grupoAtual');
     sessionStorage.removeItem('isTest');
     sessionStorage.removeItem('isProfLogado');
-    
+
     praticasRenderizadas = { p1: false, p2: false, p3: false, p4: false };
     document.getElementById("p1_resistores").innerHTML = "";
     document.getElementById("p2_resistores").innerHTML = "";
@@ -256,7 +256,7 @@ window.sairConta = function() {
     if(document.getElementById("infoP3")) document.getElementById("infoP3").value = "";
     if(document.getElementById("infoP4")) document.getElementById("infoP4").value = "";
 
-    mostrarTela('inicio');
+    voltarParaLanding();
 };
 
 window.entrarProfessor = async function() {
