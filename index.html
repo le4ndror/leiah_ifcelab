@@ -1223,6 +1223,9 @@
                     // Lógica de reconexão: Se o grupo está online ou teve atividade recente após o descarte
                     let isOnline = s.status === 'Online';
                     let isAusente = s.status.includes('Ausente');
+                    let isOffline = s.status === 'Offline';
+                    
+                    // Verifica se reconectou baseado em timestamp (atividade recente)
                     let reconectou = timestampGrupo > descartadoEm;
                     
                     // Se reconectou (ou está online), remove do localStorage
@@ -1233,15 +1236,15 @@
                     
                     // Renderiza apenas se:
                     // 1. O grupo está online, OU
-                    // 2. O grupo está ausente (saiu da aba), OU
+                    // 2. O grupo está ausente (saiu da aba/app), OU
                     // 3. O grupo está offline mas não foi descartado, OU
                     // 4. O grupo reconectou após ser descartado
                     if(isOnline || isAusente || descartadoEm === 0 || reconectou) {
                         let cor = s.status === 'Online' ? '#10b981' : (s.status.includes('Ausente') ? '#ef4444' : '#6b7280');
                         let estilo = s.status.includes('Ausente') ? 'animation: piscarAlerta 1.5s infinite;' : '';
                         
-                        // Botão X visível apenas quando offline
-                        let botaoRemover = (!isOnline) ? 
+                        // Botão X visível apenas quando realmente offline (não ausente)
+                        let botaoRemover = (isOffline && !isAusente) ? 
                             `<button onclick="removerStatusVisual('${nomeGrupo}')" 
                                     class="btn-remover-status"
                                     title="Remover da lista">✕</button>` : '';
@@ -1291,12 +1294,16 @@
                     timestamp: firebase.database.ServerValue.TIMESTAMP 
                 });
                 
-                // Nota: onDisconnect já está configurado na função registrarPresencaOnline()
+                // Reconfigura onDisconnect para garantir que funciona após desconexão
+                refStatus.onDisconnect().update({ 
+                    status: 'Offline', 
+                    timestamp: firebase.database.ServerValue.TIMESTAMP 
+                });
             }
         }
     });
 
-    // 2. Detecta se o aluno minimizou o navegador ou trocou de aba
+    // 2. Detecta se o aluno minimizou o navegador ou trocou de aba (Mobile/Desktop)
     document.addEventListener("visibilitychange", function() {
         let grupo = sessionStorage.getItem('grupoAtual') || grupoAtual;
         
@@ -1304,28 +1311,83 @@
             let refStatus = db.ref('statusTurmaIF/' + grupo);
             
             if (document.hidden) {
-                // Aluno mudou de aba ou minimizou. 
-                // NUNCA use alert() aqui, pois quebra a atualização (F5) da página.
+                // Aluno mudou de aba, minimizou ou saiu do app
                 refStatus.update({ 
                     status: '⚠️ Ausente (Saiu da Aba)', 
                     timestamp: firebase.database.ServerValue.TIMESTAMP 
                 });
             } else {
-                // Aluno voltou para a aba principal
+                // Aluno voltou para a tela
                 refStatus.update({ 
                     status: 'Online', 
                     timestamp: firebase.database.ServerValue.TIMESTAMP 
                 });
                 
-                // Exibe o alerta apenas quando ele VOLTA para a tela, evitando travamentos
+                // Exibe o alerta apenas quando ele VOLTA para a tela
                 setTimeout(() => {
                     alert("Atenção! O sistema detectou que você saiu da aba durante a aula. Mantenha o foco na atividade!");
-                }, 500); // Um pequeno delay para garantir que a página renderizou
+                }, 500);
             }
         }
     });
 
-    // 3. Força o status para Offline ao fechar a guia ou recarregar (F5)
+    // 3. Evento específico para PWAs - quando o app é fechado/minimizado no mobile
+    window.addEventListener('pagehide', function(event) {
+        let grupo = sessionStorage.getItem('grupoAtual') || grupoAtual;
+        
+        if (grupo) {
+            // Usa navigator.sendBeacon para garantir que a requisição seja enviada
+            // mesmo quando a página está sendo fechada
+            const data = JSON.stringify({
+                status: 'Offline',
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            // Tenta enviar via Firebase diretamente
+            try {
+                db.ref('statusTurmaIF/' + grupo).update({ 
+                    status: 'Offline', 
+                    timestamp: firebase.database.ServerValue.TIMESTAMP 
+                });
+            } catch(e) {
+                console.error('Erro ao marcar offline no pagehide:', e);
+            }
+        }
+    });
+
+    // 4. Evento quando o app é congelado pelo sistema (mobile)
+    document.addEventListener('freeze', function() {
+        let grupo = sessionStorage.getItem('grupoAtual') || grupoAtual;
+        
+        if (grupo) {
+            try {
+                db.ref('statusTurmaIF/' + grupo).update({ 
+                    status: 'Offline', 
+                    timestamp: firebase.database.ServerValue.TIMESTAMP 
+                });
+            } catch(e) {
+                console.error('Erro ao marcar offline no freeze:', e);
+            }
+        }
+    });
+
+    // 5. Evento quando o app é resumido (retorna do congelamento)
+    document.addEventListener('resume', function() {
+        let grupo = sessionStorage.getItem('grupoAtual') || grupoAtual;
+        
+        if (grupo) {
+            try {
+                db.ref('statusTurmaIF/' + grupo).update({ 
+                    status: 'Online', 
+                    timestamp: firebase.database.ServerValue.TIMESTAMP 
+                });
+            } catch(e) {
+                console.error('Erro ao marcar online no resume:', e);
+            }
+        }
+    });
+
+    // 6. Fallback para beforeunload (desktop principalmente)
     window.addEventListener("beforeunload", function (e) {
         let grupo = sessionStorage.getItem("grupoAtual") || grupoAtual; 
         
