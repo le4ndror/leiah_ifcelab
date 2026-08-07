@@ -52,7 +52,7 @@ display: block;
 .netflix-curved-text text {
 font-family: 'Bebas Neue', Impact, sans-serif;
 font-weight: 900;
-font-size: clamp(1.8rem, 4.5vw, 3rem);
+font-size: clamp(2.5rem, 6vw, 4rem);
 letter-spacing: 0.03em;
 fill: var(--netflix-white);
 text-transform: uppercase;
@@ -374,7 +374,7 @@ top: 0;
 left: 0;
 right: 0;
 bottom: 0;
-background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.7) 100%);
+background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 30%, rgba(0,0,0,0.7) 100%);
 z-index: -1;
 }
 
@@ -794,7 +794,6 @@ text-decoration: underline;
 .faq-answer-content {
     font-size: 1.2rem;
 }
-}
 
 /* ================= ORIGINAL SYSTEM STYLES ================= */
 .btn-voltar-topo {
@@ -829,7 +828,6 @@ color: var(--netflix-white);
 .container { 
 display: none; /* Hidden by default, shown for system screens */
 flex: 1; 
-display: flex; 
 justify-content: center; 
 align-items: center; 
 padding: 20px; 
@@ -1041,11 +1039,30 @@ color: #fca5a5;
 
 /* Hide landing page when system is active */
 body.system-active .netflix-landing {
-display: none;
+display: none !important;
 }
 
 body.system-active .container {
-display: flex;
+display: flex !important;
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+width: 100vw;
+height: 100vh;
+z-index: 9999;
+background: var(--netflix-dark);
+padding: 0;
+overflow: hidden;
+}
+
+body.system-active .card {
+max-height: 100vh;
+border-radius: 0;
+margin: 0;
+height: 100vh;
+overflow-y: auto;
 }
 
 /* Show landing page by default */
@@ -1053,10 +1070,6 @@ display: flex;
 display: block !important;
 visibility: visible !important;
 opacity: 1 !important;
-}
-
-.container {
-display: none;
 }
 
 /* Hide the original inicio screen when on landing page */

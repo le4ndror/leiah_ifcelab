@@ -14,10 +14,35 @@ window.showSystem = function(targetScreen = 'inicio') {
     }
     
     document.body.classList.add('system-active');
-    landing.style.display = 'none';
-    container.style.display = 'flex';
     
-    console.log('Landing page ocultada, container exibido');
+    // Forçar estilos inline para garantir funcionamento
+    landing.style.display = 'none';
+    landing.style.visibility = 'hidden';
+    landing.style.opacity = '0';
+    
+    container.style.display = 'flex';
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.right = '0';
+    container.style.bottom = '0';
+    container.style.width = '100vw';
+    container.style.height = '100vh';
+    container.style.zIndex = '9999';
+    container.style.background = 'var(--netflix-dark)';
+    container.style.padding = '0';
+    container.style.overflow = 'hidden';
+    
+    const card = container.querySelector('.card');
+    if (card) {
+        card.style.maxHeight = '100vh';
+        card.style.borderRadius = '0';
+        card.style.margin = '0';
+        card.style.height = '100vh';
+        card.style.overflowY = 'auto';
+    }
+    
+    console.log('Landing page ocultada, container exibido em tela cheia');
     
     // Show the specific screen from the original system
     if (targetScreen !== 'inicio') {
@@ -40,8 +65,35 @@ window.voltarParaLanding = function() {
     }
     
     document.body.classList.remove('system-active');
-    landing.style.display = 'block';
-    container.style.display = 'none';
+    
+    // Reset estilos inline da landing
+    landing.style.display = '';
+    landing.style.visibility = '';
+    landing.style.opacity = '';
+    
+    // Reset estilos inline do container
+    container.style.display = '';
+    container.style.position = '';
+    container.style.top = '';
+    container.style.left = '';
+    container.style.right = '';
+    container.style.bottom = '';
+    container.style.width = '';
+    container.style.height = '';
+    container.style.zIndex = '';
+    container.style.background = '';
+    container.style.padding = '';
+    container.style.overflow = '';
+    
+    // Reset estilos inline do card
+    const card = container.querySelector('.card');
+    if (card) {
+        card.style.maxHeight = '';
+        card.style.borderRadius = '';
+        card.style.margin = '';
+        card.style.height = '';
+        card.style.overflowY = '';
+    }
     
     // Reset to initial screen
     document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
