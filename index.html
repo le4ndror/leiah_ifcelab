@@ -15,20 +15,477 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-        /* Novo botão de voltar no topo */
+        /* ================= NETFLIX CLONE STYLES ================= */
+        
+        :root {
+            --netflix-black: #000000;
+            --netflix-dark: #141414;
+            --netflix-gray: #232323;
+            --netflix-light-gray: #404040;
+            --netflix-white: #FFFFFF;
+            --netflix-text-muted: rgba(255, 255, 255, 0.7);
+            --ifce-green: #008037;
+            --ifce-green-hover: #004d21;
+            --ifce-green-light: #2ecc71;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--netflix-black);
+            color: var(--netflix-white);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ================= HEADER ================= */
+        .netflix-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 24px 4%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 10%, transparent);
+        }
+
+        .netflix-logo {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--ifce-green);
+            letter-spacing: -2px;
+            text-decoration: none;
+        }
+
+        .netflix-header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .language-select {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--netflix-white);
+            color: var(--netflix-white);
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .sign-in-btn {
+            background: var(--ifce-green);
+            color: var(--netflix-white);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .sign-in-btn:hover {
+            background: var(--ifce-green-hover);
+        }
+
+        /* ================= HERO SECTION ================= */
+        .hero-section {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+            background: 
+                linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%),
+                linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%),
+                radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.5) 100%);
+        }
+
+        .hero-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            z-index: -2;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.7) 100%);
+            z-index: -1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 950px;
+            width: 100%;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 1.5rem;
+            color: var(--netflix-white);
+        }
+
+        .hero-description {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: var(--netflix-text-muted);
+        }
+
+        /* Floating Label Input */
+        .hero-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 950px) {
+            .hero-form {
+                flex-direction: row;
+                align-items: stretch;
+            }
+        }
+
+        .input-wrapper {
+            position: relative;
+            flex: 1;
+            width: 100%;
+        }
+
+        .floating-input {
+            width: 100%;
+            padding: 16px 16px 8px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--netflix-light-gray);
+            border-radius: 4px;
+            color: var(--netflix-white);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .floating-input:focus {
+            border-color: var(--ifce-green-light);
+        }
+
+        .floating-label {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--netflix-text-muted);
+            font-size: 1rem;
+            pointer-events: none;
+            transition: all 0.2s;
+        }
+
+        .floating-input:focus + .floating-label,
+        .floating-input:not(:placeholder-shown) + .floating-label {
+            top: 8px;
+            transform: translateY(0);
+            font-size: 0.75rem;
+            color: var(--netflix-text-muted);
+        }
+
+        .hero-cta {
+            background: var(--ifce-green);
+            color: var(--netflix-white);
+            border: none;
+            padding: 16px 24px;
+            border-radius: 4px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+            min-width: 200px;
+        }
+
+        .hero-cta:hover {
+            background: var(--ifce-green-hover);
+        }
+
+        .hero-cta svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* ================= FEATURE SECTIONS ================= */
+        .feature-section {
+            padding: 70px 45px;
+            border-bottom: 8px solid var(--netflix-gray);
+            background: var(--netflix-black);
+        }
+
+        .feature-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .feature-text {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .feature-title {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .feature-subtitle {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--netflix-white);
+        }
+
+        .feature-visual {
+            flex: 1;
+            position: relative;
+            height: 400px;
+            background: linear-gradient(135deg, rgba(0, 128, 55, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .feature-visual::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, var(--ifce-green-light) 0%, transparent 70%);
+            opacity: 0.1;
+        }
+
+        .feature-icon {
+            font-size: 4rem;
+            color: var(--ifce-green);
+            opacity: 0.8;
+        }
+
+        /* Alternating layout */
+        .feature-section:nth-child(even) .feature-container {
+            flex-direction: row-reverse;
+        }
+
+        @media (max-width: 950px) {
+            .feature-container {
+                flex-direction: column;
+            }
+
+            .feature-section:nth-child(even) .feature-container {
+                flex-direction: column;
+            }
+
+            .feature-visual {
+                width: 100%;
+                height: 300px;
+            }
+
+            .feature-title {
+                font-size: 2rem;
+            }
+
+            .feature-subtitle {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* ================= FAQ SECTION ================= */
+        .faq-section {
+            padding: 70px 45px;
+            background: var(--netflix-black);
+            text-align: center;
+        }
+
+        .faq-title {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+        }
+
+        .faq-container {
+            max-width: 815px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: var(--netflix-light-gray);
+            margin-bottom: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .faq-question:hover {
+            background: #414141;
+        }
+
+        .faq-question-text {
+            font-size: 1.5rem;
+            font-weight: 400;
+        }
+
+        .faq-icon {
+            font-size: 2rem;
+            font-weight: 300;
+            color: var(--netflix-white);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: var(--netflix-light-gray);
+        }
+
+        .faq-answer.open {
+            max-height: 500px;
+        }
+
+        .faq-answer-content {
+            padding: 24px;
+            text-align: left;
+            font-size: 1.5rem;
+            line-height: 1.5;
+        }
+
+        /* ================= FOOTER ================= */
+        .netflix-footer {
+            padding: 70px 45px;
+            background: var(--netflix-black);
+            color: var(--netflix-text-muted);
+            font-size: 0.9rem;
+        }
+
+        .footer-content {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .footer-link {
+            color: var(--netflix-text-muted);
+            text-decoration: none;
+            margin-right: 20px;
+        }
+
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ================= RESPONSIVE ================= */
+        @media (max-width: 768px) {
+            .netflix-header {
+                padding: 16px 20px;
+            }
+
+            .netflix-logo {
+                font-size: 1.8rem;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .hero-description {
+                font-size: 1rem;
+            }
+
+            .hero-cta {
+                font-size: 1.2rem;
+                padding: 12px 20px;
+            }
+
+            .feature-section {
+                padding: 50px 20px;
+            }
+
+            .faq-section {
+                padding: 50px 20px;
+            }
+
+            .faq-title {
+                font-size: 2rem;
+            }
+
+            .faq-question-text {
+                font-size: 1.2rem;
+            }
+
+            .faq-answer-content {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* ================= ORIGINAL SYSTEM STYLES ================= */
         .btn-voltar-topo {
             position: absolute;
             top: 20px;
             left: 20px;
             background: transparent;
             border: none;
-            color: var(--text-muted);
+            color: var(--netflix-text-muted);
             font-weight: 600;
             font-size: 0.95rem;
             cursor: pointer;
-            display: none; /* Escondido por padrão na tela de início */
+            display: none;
             align-items: center;
             gap: 6px;
             padding: 6px 12px;
@@ -38,66 +495,245 @@
         }
 
         .btn-voltar-topo:hover {
-            background: #f3f4f6;
-            color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--netflix-white);
         }
 
-        /* Ajuste no padding do card para mobile para o botão não sobrepor o título */
         @media (max-width: 600px) {
             .card { padding: 60px 20px 20px 20px; }
             .btn-voltar-topo { top: 15px; left: 10px; }
         }
 
-        :root {
-            --primary-color: #20c997; /* Verde mais vibrante do botão principal */
-            --primary-hover: #1ba078; 
-            --bg-color: #e8f7ed;      /* Fundo verde claro e sólido igual ao da foto */
-            --surface-color: #ffffff; 
-            --text-main: #111827; 
-            --text-muted: #6b7280;
-            --border-color: #e5e7eb; 
-            --danger-color: #ef4444; 
-            --success-color: #10b981;
+        .container { 
+            display: none; /* Hidden by default, shown for system screens */
+            flex: 1; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 20px; 
+            max-width: 1000px; 
+            width: 100%; 
         }
+        
+        .card { 
+            background: var(--netflix-dark); 
+            border-radius: 12px; 
+            padding: 48px; 
+            width: 100%; 
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); 
+            border: 1px solid var(--netflix-light-gray); 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            position: relative; 
+        }
+        
+        .card::-webkit-scrollbar { width: 6px; } 
+        .card::-webkit-scrollbar-thumb { background: var(--netflix-light-gray); border-radius: 4px; }
+        
+        h1 { font-weight: 600; font-size: 1.7rem; margin-bottom: 8px; } 
+        h2 { font-weight: 400; font-size: 1.1rem; margin-top: 0; margin-bottom: 30px; color: var(--netflix-text-muted); }
+        .desc { color: var(--netflix-text-muted); font-size: 0.95rem; margin-bottom: 16px; }
 
-        * { box-sizing: border-box; }
+        button, input, select { 
+            width: 100%; 
+            padding: 12px 14px; 
+            margin: 6px 0; 
+            font-size: 0.95rem; 
+            border-radius: 8px; 
+            border: 1px solid var(--netflix-light-gray); 
+            outline: none; 
+            transition: all 0.2s; 
+            font-family: 'Inter', sans-serif; 
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--netflix-white);
+        }
         
-        /* Fundo ajustado para cor sólida usando a variável --bg-color */
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; max-width: 1000px; width: 100%; }
+        input:focus, select:focus { 
+            background: rgba(255, 255, 255, 0.15); 
+            border-color: var(--ifce-green); 
+            box-shadow: 0 0 0 4px rgba(0, 128, 55, 0.2); 
+        }
         
-        /* Adicione esta regra ao seu .card existente */
-        .card { background: var(--surface-color); border-radius: 12px; padding: 48px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); border: 1px solid rgba(16,185,129,0.1); max-height: 90vh; overflow-y: auto; position: relative; }
+        .input-destaque { 
+            border: 2px solid var(--ifce-green); 
+            background: rgba(0, 128, 55, 0.1); 
+            font-weight: 500; 
+        }
         
-        .card::-webkit-scrollbar { width: 6px; } .card::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        h1 { font-weight: 600; font-size: 1.7rem; margin-bottom: 8px; } h2 { font-weight: 400; font-size: 1.1rem; margin-top: 0; margin-bottom: 30px; color: var(--text-muted); }
-        .desc { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 16px; }
-
-        button, input, select { width: 100%; padding: 12px 14px; margin: 6px 0; font-size: 0.95rem; border-radius: 8px; border: 1px solid var(--border-color); outline: none; transition: all 0.2s; font-family: 'Inter', sans-serif; }
-        input, select { background: #f9fafb; color: var(--text-main); }
-        input:focus, select:focus { background: var(--surface-color); border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(16,185,129,0.15); }
-        .input-destaque { border: 2px solid var(--primary-color); background: #f0fdf4; font-weight: 500; }
-        button { background-color: var(--primary-color); color: white; font-weight: 600; cursor: pointer; border: none; }
-        button:hover { background-color: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16,185,129,0.2); }
+        button { 
+            background-color: var(--ifce-green); 
+            color: white; 
+            font-weight: 600; 
+            cursor: pointer; 
+            border: none; 
+        }
+        
+        button:hover { 
+            background-color: var(--ifce-green-hover); 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 12px rgba(0, 128, 55, 0.3); 
+        }
+        
         .btn-voltar, .btn-secundario { 
-            background-color: #f3f4f6; /* Fundo cinza claro igual da foto */
-            color: var(--text-main); 
-            border: none; /* Remove a borda que estava deixando o botão marcado */
+            background-color: rgba(255, 255, 255, 0.1); 
+            color: var(--netflix-white); 
+            border: 1px solid var(--netflix-light-gray);
             font-weight: 600;
         }
         
         .btn-voltar:hover, .btn-secundario:hover { 
-            background-color: #e5e7eb; 
+            background-color: rgba(255, 255, 255, 0.15); 
         }
-        .btn-perigo { background-color: var(--danger-color); color: white; }
-        .btn-perigo:hover { background-color: #dc2626; }
         
-        /* CSS ESPECIAL PARA A CONTA DE TESTE */
-        .btn-teste { display: none; background-color: #fef08a; border: 1px solid #facc15; color: #854d0e; }
-        .btn-teste:hover { background-color: #fde047; }
-        body.is-test .btn-teste { display: block; }
-        body.is-test .btn-normal-submit { display: none; }
-        body.is-test .esconder-no-teste { display: none !important; }
+        .btn-perigo { 
+            background-color: #ef4444; 
+            color: white; 
+        }
+        
+        .btn-perigo:hover { 
+            background-color: #dc2626; 
+        }
+        
+        .btn-teste { 
+            display: none; 
+            background-color: rgba(254, 240, 138, 0.2); 
+            border: 1px solid rgba(250, 204, 21, 0.5); 
+            color: #fef08a; 
+        }
+        
+        .btn-teste:hover { 
+            background-color: rgba(254, 240, 138, 0.3); 
+        }
+        
+        body.is-test .btn-teste { 
+            display: block; 
+        }
+        
+        body.is-test .btn-normal-submit { 
+            display: none; 
+        }
+        
+        body.is-test .esconder-no-teste { 
+            display: none !important; 
+        }
+
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin: 32px 0;
+        }
+
+        .module-card {
+            background: var(--netflix-dark);
+            border: 1px solid var(--netflix-light-gray);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .module-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--ifce-green);
+            box-shadow: 0 8px 25px rgba(0, 128, 55, 0.2);
+        }
+
+        .module-img {
+            height: 160px;
+            background-position: center;
+            background-size: cover;
+            border-bottom: 1px solid var(--netflix-light-gray);
+        }
+
+        .module-title {
+            padding: 20px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--netflix-white);
+        }
+
+        .registro {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            margin: 16px 0;
+            border-radius: 12px;
+            border: 1px solid var(--netflix-light-gray);
+            font-size: 0.95rem;
+            text-align: left;
+        }
+
+        .registro strong {
+            color: var(--netflix-white);
+            font-weight: 600;
+        }
+
+        .status-ok {
+            color: var(--ifce-green-light);
+            font-weight: 600;
+        }
+
+        .info-box {
+            background: rgba(0, 128, 55, 0.1);
+            color: var(--ifce-green-light);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(0, 128, 55, 0.3);
+            text-align: center;
+        }
+
+        .tela {
+            display: none;
+        }
+
+        .ativa {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn-remover-status {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            width: auto;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .btn-remover-status:hover {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: rgba(239, 68, 68, 0.6);
+            color: #fca5a5;
+        }
+
+        /* Hide landing page when system is active */
+        body.system-active .netflix-landing {
+            display: none;
+        }
+
+        body.system-active .container {
+            display: flex;
+        }
+
+        /* Show landing page by default */
+        .netflix-landing {
+            display: block;
+        }
+
+        .container {
+            display: none;
+        }
 
         .tela { display: none; } .ativa { display: block; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -163,6 +799,148 @@
     </style>
 </head>
 <body>
+<!-- ================= NETFLIX LANDING PAGE ================= -->
+<div class="netflix-landing">
+    <!-- Header -->
+    <header class="netflix-header">
+        <a href="#" class="netflix-logo">IFCE LAB</a>
+        <div class="netflix-header-right">
+            <select class="language-select">
+                <option value="pt">Português</option>
+                <option value="en">English</option>
+            </select>
+            <button class="sign-in-btn" onclick="showSystem()">Entrar</button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-background"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Laboratório de Eletrônica e Tecnologia</h1>
+            <h2 class="hero-subtitle">Práticas interativas, avaliações em tempo real e monitoramento inteligente</h2>
+            <p class="hero-description">Uma plataforma completa de ensino de eletrônica básica para o Instituto Federal do Ceará</p>
+            <form class="hero-form" onsubmit="event.preventDefault(); showSystem();">
+                <div class="input-wrapper">
+                    <input type="email" class="floating-input" placeholder=" " required>
+                    <label class="floating-label">Email ou cadastro</label>
+                </div>
+                <button type="submit" class="hero-cta">
+                    Começar
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Feature Section 1 -->
+    <section class="feature-section">
+        <div class="feature-container">
+            <div class="feature-text">
+                <h2 class="feature-title">Práticas Interativas</h2>
+                <p class="feature-subtitle">Realize experimentos de eletrônica básica com feedback imediato e guias passo a passo.</p>
+            </div>
+            <div class="feature-visual">
+                <div class="feature-icon">⚡</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Section 2 -->
+    <section class="feature-section">
+        <div class="feature-container">
+            <div class="feature-text">
+                <h2 class="feature-title">Monitoramento em Tempo Real</h2>
+                <p class="feature-subtitle">Acompanhe o progresso dos alunos e o status das bancadas de laboratório ao vivo.</p>
+            </div>
+            <div class="feature-visual">
+                <div class="feature-icon">📊</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Section 3 -->
+    <section class="feature-section">
+        <div class="feature-container">
+            <div class="feature-text">
+                <h2 class="feature-title">Avaliações Automatizadas</h2>
+                <p class="feature-subtitle">Sistema de correção automática com geração de relatórios detalhados para professores.</p>
+            </div>
+            <div class="feature-visual">
+                <div class="feature-icon">🎯</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <h2 class="faq-title">Perguntas Frequentes</h2>
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span class="faq-question-text">O que é o IFCE LAB?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        O IFCE LAB é uma plataforma completa de laboratório de eletrônica básica do Instituto Federal do Ceará, permitindo que alunos realizem práticas interativas e professores monitorem o progresso em tempo real.
+                    </div>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span class="faq-question-text">Como faço para acessar?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Professores podem acessar através do portal institucional com suas credenciais. Alunos utilizam o código da bancada fornecido pelo professor para acessar as práticas.
+                    </div>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span class="faq-question-text">Quais práticas estão disponíveis?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Oferecemos práticas de circuitos básicos, lei de Ohm, componentes eletrônicos, protoboard, multímetro e muito mais, todas com materiais teóricos e práticos.
+                    </div>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span class="faq-question-text">Posso acessar de qualquer dispositivo?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Sim! O IFCE LAB é uma PWA (Progressive Web App) que funciona em qualquer dispositivo - desktop, tablet ou smartphone - com interface otimizada para cada tela.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="netflix-footer">
+        <div class="footer-content">
+            <p>Instituto Federal do Ceará - Campus Maranguape</p>
+            <p>Laboratório de Eletrônica Básica</p>
+            <div style="margin-top: 20px;">
+                <a href="#" class="footer-link">Sobre</a>
+                <a href="#" class="footer-link">Ajuda</a>
+                <a href="#" class="footer-link">Contato</a>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<!-- ================= ORIGINAL SYSTEM ================= -->
 <div class="container">
     <div class="card">
         <button id="btnVoltarTopo" class="btn-voltar-topo" onclick="voltarPagina()">
@@ -313,6 +1091,21 @@
 </div>
 
 <script>
+    // ================= LANDING PAGE CONTROLS =================
+    function showSystem() {
+        document.body.classList.add('system-active');
+        document.querySelector('.netflix-landing').style.display = 'none';
+        document.querySelector('.container').style.display = 'flex';
+    }
+
+    function toggleFaq(element) {
+        const answer = element.nextElementSibling;
+        const icon = element.querySelector('.faq-icon');
+        
+        answer.classList.toggle('open');
+        icon.textContent = answer.classList.contains('open') ? '×' : '+';
+    }
+
     // ================= CONFIGURAÇÃO FIREBASE =================
     const firebaseConfig = {
       apiKey: "AIzaSyBd8vchRcXzpknvszJikiFhiJz8eIg5nnY",
