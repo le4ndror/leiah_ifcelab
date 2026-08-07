@@ -744,9 +744,14 @@
             display: none;
         }
 
-        /* Hide the original inicio screen since we use landing page */
-        #inicio {
+        /* Hide the original inicio screen when on landing page */
+        body:not(.system-active) #inicio {
             display: none !important;
+        }
+
+        /* Ensure inicio screen is visible when active and in system */
+        body.system-active #inicio.ativa {
+            display: block !important;
         }
 
         .tela { display: none; } .ativa { display: block; animation: fadeIn 0.3s ease-in-out; }
@@ -1140,6 +1145,11 @@
         // Limpa qualquer estado de autenticação ou acesso
         grupoAtual = "";
         isProfLogado = false;
+        
+        // Garante que está no sistema
+        document.body.classList.add('system-active');
+        document.querySelector('.netflix-landing').style.display = 'none';
+        document.querySelector('.container').style.display = 'flex';
         
         // Navega explicitamente para a tela inicial
         mostrarTela('inicio');
