@@ -241,6 +241,15 @@
             background: var(--ifce-green-hover);
         }
 
+        .hero-cta-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--netflix-white);
+        }
+
+        .hero-cta-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
         .hero-cta svg {
             width: 24px;
             height: 24px;
@@ -735,6 +744,11 @@
             display: none;
         }
 
+        /* Hide the original inicio screen since we use landing page */
+        #inicio {
+            display: none !important;
+        }
+
         .tela { display: none; } .ativa { display: block; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -809,7 +823,6 @@
                 <option value="pt">Português</option>
                 <option value="en">English</option>
             </select>
-            <button class="sign-in-btn" onclick="showSystem()">Entrar</button>
         </div>
     </header>
 
@@ -821,18 +834,20 @@
             <h1 class="hero-title">Laboratório de Eletrônica e Tecnologia</h1>
             <h2 class="hero-subtitle">Práticas interativas, avaliações em tempo real e monitoramento inteligente</h2>
             <p class="hero-description">Uma plataforma completa de ensino de eletrônica básica para o Instituto Federal do Ceará</p>
-            <form class="hero-form" onsubmit="event.preventDefault(); showSystem();">
-                <div class="input-wrapper">
-                    <input type="email" class="floating-input" placeholder=" " required>
-                    <label class="floating-label">Email ou cadastro</label>
-                </div>
-                <button type="submit" class="hero-cta">
-                    Começar
+            <div class="hero-form">
+                <button onclick="showSystem('loginProfessor')" class="hero-cta">
+                    Portal do Professor
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="9 18 15 12 9 6"></polyline>
                     </svg>
                 </button>
-            </form>
+                <button onclick="showSystem('loginGrupo')" class="hero-cta hero-cta-secondary">
+                    Acesso de Alunos
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
         </div>
     </section>
 
@@ -943,7 +958,7 @@
 <!-- ================= ORIGINAL SYSTEM ================= -->
 <div class="container">
     <div class="card">
-        <button id="btnVoltarTopo" class="btn-voltar-topo" onclick="voltarPagina()">
+        <button id="btnVoltarTopo" class="btn-voltar-topo" onclick="voltarParaLanding()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 12H5"></path>
                 <polyline points="12 19 5 12 12 5"></polyline>
@@ -1092,10 +1107,25 @@
 
 <script>
     // ================= LANDING PAGE CONTROLS =================
-    function showSystem() {
+    function showSystem(targetScreen = 'inicio') {
         document.body.classList.add('system-active');
         document.querySelector('.netflix-landing').style.display = 'none';
         document.querySelector('.container').style.display = 'flex';
+        
+        // Show the specific screen from the original system
+        if (targetScreen !== 'inicio') {
+            mostrarTela(targetScreen);
+        }
+    }
+
+    function voltarParaLanding() {
+        document.body.classList.remove('system-active');
+        document.querySelector('.netflix-landing').style.display = 'block';
+        document.querySelector('.container').style.display = 'none';
+        
+        // Reset to initial screen
+        document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+        document.getElementById('inicio').classList.add('ativa');
     }
 
     function toggleFaq(element) {
@@ -1437,8 +1467,19 @@
     } // <-- A chave fecha AQUI
 
         function voltarPagina() {
-        window.history.back(); 
-    }
+            // Check if we're in the system and can go back
+            if (document.body.classList.contains('system-active')) {
+                // If we're at the initial screen, go back to landing
+                const inicioScreen = document.getElementById('inicio');
+                if (inicioScreen.classList.contains('ativa')) {
+                    voltarParaLanding();
+                } else {
+                    window.history.back();
+                }
+            } else {
+                window.history.back();
+            }
+        }
 
     window.addEventListener('popstate', function(event) {
         if (event.state && event.state.tela) {
