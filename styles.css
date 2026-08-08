@@ -158,6 +158,337 @@ animation: wave-shift 3s linear infinite;
 .blink-5 { animation: blink-dot 1.2s ease-in-out infinite 0.6s; }
 .blink-6 { animation: blink-dot 1.2s ease-in-out infinite 1.0s; }
 
+/* ================= MODERN LOGIN SCREENS ================= */
+.login-screen {
+width: 100%;
+min-height: 100vh;
+background: #080a08;
+display: flex;
+align-items: center;
+justify-content: center;
+position: relative;
+overflow: hidden;
+font-family: 'Inter', sans-serif;
+}
+
+.login-background {
+position: absolute;
+inset: 0;
+width: 100%;
+height: 100%;
+}
+
+.circuit-mesh {
+position: absolute;
+inset: 0;
+width: 100%;
+height: 100%;
+background: radial-gradient(ellipse at center, rgba(0,255,136,0.03) 0%, transparent 70%);
+}
+
+.radial-glow {
+position: absolute;
+inset: 0;
+background: radial-gradient(ellipse 55% 50% at 50% 50%, rgba(0,255,136,0.05) 0%, transparent 68%);
+pointer-events: none;
+}
+
+.scan-line {
+position: absolute;
+left: 0;
+right: 0;
+height: 1px;
+background: linear-gradient(to right, transparent 8%, rgba(0,255,136,0.06) 50%, transparent 92%);
+animation: scan-line 11s linear infinite;
+}
+
+.corner-bracket {
+position: absolute;
+width: 20px;
+height: 20px;
+border: 1px solid rgba(0,255,136,0.2);
+}
+
+.corner-tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+.corner-tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
+.corner-bl { bottom: 20px; left: 20px; border-right: none; border-top: none; }
+.corner-br { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+
+.login-glass-panel {
+position: relative;
+z-index: 10;
+width: min(420px, 92vw);
+background: rgba(12,15,12,0.85);
+backdrop-filter: blur(24px);
+-webkit-backdrop-filter: blur(24px);
+border: 1px solid rgba(255,255,255,0.055);
+border-radius: 14px;
+padding: 36px 32px 32px;
+box-shadow: 0 0 0 1px rgba(0,255,136,0.06), 0 32px 90px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.login-back-link {
+display: block;
+background: none;
+border: none;
+cursor: pointer;
+padding: 0;
+margin-bottom: 28px;
+font-family: 'Inter', sans-serif;
+font-size: 14px;
+color: #6b7780;
+transition: color 0.2s;
+}
+
+.login-back-link:hover {
+color: #00ff88;
+}
+
+.login-form {
+display: flex;
+flex-direction: column;
+gap: 12px;
+}
+
+.login-input {
+width: 100%;
+background: #141a14;
+border: 1.5px solid #252d25;
+border-radius: 8px;
+padding: 13px 16px;
+font-family: 'Inter', sans-serif;
+font-size: 14px;
+color: #e8eaed;
+outline: none;
+transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.login-input:focus {
+border-color: #00ff88;
+box-shadow: 0 0 0 3px rgba(0,255,136,0.13), 0 0 20px rgba(0,255,136,0.07);
+}
+
+.login-btn-primary {
+background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+border: none;
+border-radius: 8px;
+padding: 14px 20px;
+font-family: 'Inter', sans-serif;
+font-size: 15px;
+font-weight: 600;
+color: #0a0a0a;
+cursor: pointer;
+transition: all 0.2s;
+box-shadow: 0 0 12px 2px rgba(0,255,136,0.35);
+}
+
+.login-btn-primary:hover {
+box-shadow: 0 0 24px 6px rgba(0,255,136,0.18);
+transform: translateY(-1px);
+}
+
+.login-btn-secondary {
+background: #1a1e1a;
+border: 1px solid #2a3028;
+border-radius: 8px;
+padding: 14px 20px;
+font-family: 'Inter', sans-serif;
+font-size: 15px;
+font-weight: 500;
+color: #9aa3ac;
+cursor: pointer;
+transition: all 0.2s;
+}
+
+.login-btn-secondary:hover {
+background: #222622;
+border-color: #3a4038;
+color: #e8eaed;
+}
+
+.login-status-strip {
+margin-top: 24px;
+padding-top: 18px;
+border-top: 1px solid rgba(30,40,30,0.9);
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 18px;
+}
+
+.status-dot {
+width: 6px;
+height: 6px;
+background: #00ff88;
+border-radius: 50%;
+box-shadow: 0 0 6px 2px rgba(0,255,136,0.6);
+animation: pulse-green 2.2s ease-in-out infinite;
+}
+
+.status-text {
+font-family: 'JetBrains Mono', monospace;
+font-size: 9px;
+color: #2a352a;
+letter-spacing: 0.18em;
+}
+
+/* Split Screen Login */
+.login-split-screen {
+width: 100%;
+min-height: 100vh;
+display: flex;
+background: #0a0c0a;
+font-family: 'Inter', sans-serif;
+position: relative;
+overflow: hidden;
+}
+
+.login-left-panel {
+flex: 1 1 55%;
+position: relative;
+overflow: hidden;
+}
+
+.login-workbench-image {
+width: 100%;
+height: 100%;
+object-fit: cover;
+object-position: center;
+filter: brightness(0.28) saturate(0.5) hue-rotate(100deg);
+}
+
+.login-green-tint {
+position: absolute;
+inset: 0;
+background: linear-gradient(140deg, rgba(0,255,100,0.05) 0%, transparent 55%);
+}
+
+.login-fade-overlay {
+position: absolute;
+inset: 0;
+background: linear-gradient(to right, transparent 40%, #0a0c0a 100%);
+}
+
+.login-status-lights {
+position: absolute;
+bottom: 44px;
+left: 40px;
+display: flex;
+flex-direction: column;
+gap: 14px;
+}
+
+.status-light-item {
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.status-light-dot {
+width: 8px;
+height: 8px;
+background: #00ff88;
+border-radius: 50%;
+box-shadow: 0 0 6px 2px rgba(0,255,136,0.6);
+animation: pulse-green 2.2s ease-in-out infinite;
+}
+
+.status-light-label {
+font-family: 'JetBrains Mono', monospace;
+font-size: 10px;
+color: rgba(0,255,136,0.6);
+letter-spacing: 0.18em;
+}
+
+.login-cam-label {
+position: absolute;
+top: 32px;
+left: 36px;
+font-family: 'JetBrains Mono', monospace;
+font-size: 10px;
+letter-spacing: 0.22em;
+color: rgba(0,255,136,0.4);
+text-transform: uppercase;
+}
+
+.login-right-panel {
+position: relative;
+z-index: 10;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 48px 40px 48px 0;
+margin-left: -60px;
+flex: 0 0 auto;
+}
+
+.login-form-panel {
+width: min(420px, 88vw);
+background: #111416;
+border: 1px solid #1e2328;
+border-radius: 12px;
+padding: 36px 32px 32px;
+box-shadow: 0 0 80px rgba(0,0,0,0.85), 0 0 0 1px rgba(0,255,136,0.03);
+}
+
+.login-back-arrow {
+display: flex;
+align-items: center;
+gap: 6px;
+background: none;
+border: none;
+cursor: pointer;
+padding: 0;
+margin-bottom: 28px;
+font-family: 'Inter', sans-serif;
+font-size: 14px;
+color: #9aa3ac;
+transition: color 0.2s;
+}
+
+.login-back-arrow:hover {
+color: #00ff88;
+}
+
+.login-title {
+font-family: 'Inter', sans-serif;
+font-size: 26px;
+font-weight: 700;
+color: #e8eaed;
+margin: 0 0 28px;
+letter-spacing: -0.025em;
+}
+
+@keyframes pulse-green {
+0%, 100% { opacity: 1; box-shadow: 0 0 6px 2px rgba(0,255,136,0.6); }
+50% { opacity: 0.55; box-shadow: 0 0 2px 1px rgba(0,255,136,0.2); }
+}
+
+@keyframes scan-line {
+0% { transform: translateY(-100%); }
+100% { transform: translateY(100vh); }
+}
+
+@media (max-width: 768px) {
+.login-split-screen {
+flex-direction: column;
+}
+
+.login-left-panel {
+flex: 0 0 200px;
+}
+
+.login-right-panel {
+margin-left: 0;
+padding: 32px 20px;
+width: 100%;
+}
+
+.login-form-panel {
+width: 100%;
+}
+}
+
 /* Subtitle / Hero Description */
 .hero-subtitle {
 font-weight: 400;
