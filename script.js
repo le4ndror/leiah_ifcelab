@@ -483,42 +483,53 @@ function formatEng(val, unit = '') {
 }
 
 function calcDeltaInterno(nominal, medido) {
-    if (!nominal || nominal === 0) return 0; 
+    if (!nominal || nominal === 0) return 0;
     return (((Math.abs(medido) - Math.abs(nominal)) / Math.abs(nominal)) * 100);
 } // <-- A chave fecha AQUI
 
-    function voltarPagina() {
-        // Check if we're in the system and can go back
-        if (document.body.classList.contains('system-active')) {
-            // If we're at the initial screen, go back to landing
-            const inicioScreen = document.getElementById('inicio');
-            if (inicioScreen.classList.contains('ativa')) {
-                voltarParaLanding();
-            } else {
-                window.history.back();
-            }
-        } else {
-            window.history.back();
-        }
-    }
+    // Comentado temporariamente para testar navegação
+    // function voltarPagina() {
+    //     // Check if we're in the system and can go back
+    //     if (document.body.classList.contains('system-active')) {
+    //         // If we're at the initial screen, go back to landing
+    //         const inicioScreen = document.getElementById('inicio');
+    //         if (inicioScreen.classList.contains('ativa')) {
+    //             voltarParaLanding();
+    //         } else {
+    //             window.history.back();
+    //         }
+    //     } else {
+    //         window.history.back();
+    //     }
+    // }
 
-window.addEventListener('popstate', function(event) {
-    if (event.state && event.state.tela) {
-        mostrarTela(event.state.tela, true);
-    } else {
-        mostrarTela('inicio', true);
-    }
-});
+// Comentado temporariamente para testar navegação
+// window.addEventListener('popstate', function(event) {
+//     if (event.state && event.state.tela) {
+//         mostrarTela(event.state.tela, true);
+//     } else {
+//         mostrarTela('inicio', true);
+//     }
+// });
 
-window.mostrarTela = function(id, vindoDoHistorico = false) { 
+window.mostrarTela = function(id, vindoDoHistorico = false) {
+    console.log('mostrarTela chamada com id:', id);
     const tela = document.getElementById(id);
     if (!tela) {
         console.error(`Tela ${id} não encontrada`);
+        console.log('Telas disponíveis:', Array.from(document.querySelectorAll('.tela')).map(t => t.id));
         return;
     }
-    
-    document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa")); 
-    tela.classList.add("ativa"); 
+
+    console.log('Tela encontrada:', id, 'Elemento:', tela);
+    document.querySelectorAll(".tela").forEach(t => {
+        console.log('Removendo classe ativa de:', t.id);
+        t.classList.remove("ativa");
+    });
+    tela.classList.add("ativa");
+    console.log('Classe ativa adicionada a:', id);
+    console.log('Classes da tela:', tela.className);
+    console.log('Display calculado:', window.getComputedStyle(tela).display);
 
     if (!vindoDoHistorico) {
         window.history.pushState({ tela: id }, "", `#${id}`);
@@ -526,7 +537,7 @@ window.mostrarTela = function(id, vindoDoHistorico = false) {
 
     let btnTopo = document.getElementById("btnVoltarTopo");
     if (btnTopo) {
-        btnTopo.style.display = (id === 'inicio') ? 'none' : 'flex';
+        btnTopo.style.display = (id === 'inicio' || id === 'loginProfessor' || id === 'loginGrupo') ? 'none' : 'flex';
     }
 };
 
