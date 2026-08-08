@@ -141,8 +141,17 @@
                         </filter>
                     </defs>
                     <g stroke="rgba(34,197,94,0.07)" stroke-width="0.5">
-                        {[20,40,60,80,100].map(y => <line key={y} x1="10" y1={y} x2="190" y2={y} />)}
-                        {[30,60,90,120,150,180].map(x => <line key={x} x1={x} y1="10" x2={x} y2="110" />)}
+                        <line x1="10" y1="20" x2="190" y2="20" />
+                        <line x1="10" y1="40" x2="190" y2="40" />
+                        <line x1="10" y1="60" x2="190" y2="60" />
+                        <line x1="10" y1="80" x2="190" y2="80" />
+                        <line x1="10" y1="100" x2="190" y2="100" />
+                        <line x1="30" y1="10" x2="30" y2="110" />
+                        <line x1="60" y1="10" x2="60" y2="110" />
+                        <line x1="90" y1="10" x2="90" y2="110" />
+                        <line x1="120" y1="10" x2="120" y2="110" />
+                        <line x1="150" y1="10" x2="150" y2="110" />
+                        <line x1="180" y1="10" x2="180" y2="110" />
                     </g>
                     <g class="wave-container" clipPath="url(#wave-clip)">
                         <defs>
@@ -152,13 +161,13 @@
                         <path class="wave-path" d="M10 75 C20 68 30 82 40 75 C50 68 60 82 70 75 C80 68 90 82 100 75 C110 68 120 82 130 75 C140 68 150 82 160 75 C170 68 180 82 190 75 C200 68 210 82 220 75 C230 68 240 82 250 75 C260 68 270 82 280 75 C290 68 300 82 310 75 C320 68 330 82 340 75 C350 68 360 82 370 75" stroke="rgba(34,197,94,0.4)" stroke-width="1" fill="none" filter="url(#glow-green)" style="animation-duration: 4.5s; animation-delay: 0.5s;" />
                     </g>
                     <g>
-                        {[{ x: 20, h: 30 }, { x: 35, h: 45 }, { x: 50, h: 25 }, { x: 65, h: 50 }, { x: 80, h: 38 }].map(({ x, h }, i) => (
-                            <g key={i}>
-                                <rect x={x} y={105 - h} width="10" height={h} rx="1" fill="rgba(34,197,94,0.25)" stroke="rgba(34,197,94,0.6)" stroke-width="0.5" />
-                            </g>
-                        ))}
+                        <rect x="20" y="75" width="10" height="30" rx="1" fill="rgba(34,197,94,0.25)" stroke="rgba(34,197,94,0.6)" stroke-width="0.5" />
+                        <rect x="35" y="60" width="10" height="45" rx="1" fill="rgba(34,197,94,0.25)" stroke="rgba(34,197,94,0.6)" stroke-width="0.5" />
+                        <rect x="50" y="80" width="10" height="25" rx="1" fill="rgba(34,197,94,0.25)" stroke="rgba(34,197,94,0.6)" stroke-width="0.5" />
+                        <rect x="65" y="55" width="10" height="50" rx="1" fill="rgba(34,197,94,0.25)" stroke="rgba(34,197,94,0.6)" stroke-width="0.5" />
+                        <rect x="80" y="67" width="10" height="38" rx="1" fill="rgba(34,197,94,0.25)" stroke="rgba(34,197,94,0.6)" stroke-width="0.5" />
                     </g>
-                    <g fill="rgba(34,197,94,0.7)" fontSize="5" fontFamily="monospace">
+                    <g fill="rgba(34,197,94,0.7)" font-size="5" font-family="monospace">
                         <text x="110" y="20">BANCADA STATUS</text>
                         <text x="110" y="30" fill="rgba(34,197,94,0.5)">▶ LIVE</text>
                     </g>
@@ -168,11 +177,11 @@
                     <circle cx="175" cy="40" r="3" fill="#22c55e" class="blink-4" filter="url(#glow-green)" />
                     <circle cx="190" cy="40" r="3" fill="#22c55e" class="blink-5" filter="url(#glow-green)" />
                     <rect x="110" y="75" width="35" height="28" rx="2" fill="rgba(34,197,94,0.06)" stroke="rgba(34,197,94,0.2)" stroke-width="0.5" />
-                    <text x="118" y="86" fill="rgba(34,197,94,0.5)" fontSize="4" fontFamily="monospace">ALUNOS</text>
-                    <text x="116" y="97" fill="#22c55e" fontSize="9" fontFamily="monospace" fontWeight="bold">24</text>
+                    <text x="118" y="86" fill="rgba(34,197,94,0.5)" font-size="4" font-family="monospace">ALUNOS</text>
+                    <text x="116" y="97" fill="#22c55e" font-size="9" font-family="monospace" font-weight="bold">24</text>
                     <rect x="152" y="75" width="35" height="28" rx="2" fill="rgba(34,197,94,0.06)" stroke="rgba(34,197,94,0.2)" stroke-width="0.5" />
-                    <text x="157" y="86" fill="rgba(34,197,94,0.5)" fontSize="4" fontFamily="monospace">BANCADAS</text>
-                    <text x="161" y="97" fill="#22c55e" fontSize="9" fontFamily="monospace" fontWeight="bold">8</text>
+                    <text x="157" y="86" fill="rgba(34,197,94,0.5)" font-size="4" font-family="monospace">BANCADAS</text>
+                    <text x="161" y="97" fill="#22c55e" font-size="9" font-family="monospace" font-weight="bold">8</text>
                 </svg>
             </div>
         </div>
