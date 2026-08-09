@@ -4,46 +4,20 @@ console.log('Script carregado com sucesso');
 // Declarar as funções no escopo global explicitamente
 window.showSystem = function(targetScreen = 'inicio') {
     console.log('showSystem chamado com:', targetScreen);
-    
+
     const landing = document.querySelector('.netflix-landing');
     const container = document.querySelector('.container');
-    
+
     if (!landing || !container) {
         console.error('Elementos necessários não encontrados', { landing, container });
         return;
     }
-    
+
+    // Apenas adiciona a classe - CSS controla tudo
     document.body.classList.add('system-active');
-    
-    // Forçar estilos inline para garantir funcionamento
-    landing.style.display = 'none';
-    landing.style.visibility = 'hidden';
-    landing.style.opacity = '0';
-    
-    container.style.display = 'flex';
-    container.style.position = 'fixed';
-    container.style.top = '0';
-    container.style.left = '0';
-    container.style.right = '0';
-    container.style.bottom = '0';
-    container.style.width = '100vw';
-    container.style.height = '100vh';
-    container.style.zIndex = '9999';
-    container.style.background = 'var(--netflix-dark)';
-    container.style.padding = '0';
-    container.style.overflow = 'hidden';
-    
-    const card = container.querySelector('.card');
-    if (card) {
-        card.style.maxHeight = '100vh';
-        card.style.borderRadius = '0';
-        card.style.margin = '0';
-        card.style.height = '100vh';
-        card.style.overflowY = 'auto';
-    }
-    
-    console.log('Landing page ocultada, container exibido em tela cheia');
-    
+
+    console.log('Classe system-active adicionada. CSS vai controlar o display.');
+
     // Show the specific screen from the original system
     if (targetScreen !== 'inicio') {
         console.log('Navegando para tela:', targetScreen);
@@ -58,43 +32,17 @@ window.voltarParaLanding = function() {
     const landing = document.querySelector('.netflix-landing');
     const container = document.querySelector('.container');
     const inicio = document.getElementById('inicio');
-    
+
     if (!landing || !container || !inicio) {
         console.error('Elementos necessários não encontrados');
         return;
     }
-    
+
+    // Apenas remove a classe - CSS controla tudo
     document.body.classList.remove('system-active');
-    
-    // Reset estilos inline da landing
-    landing.style.display = '';
-    landing.style.visibility = '';
-    landing.style.opacity = '';
-    
-    // Reset estilos inline do container
-    container.style.display = '';
-    container.style.position = '';
-    container.style.top = '';
-    container.style.left = '';
-    container.style.right = '';
-    container.style.bottom = '';
-    container.style.width = '';
-    container.style.height = '';
-    container.style.zIndex = '';
-    container.style.background = '';
-    container.style.padding = '';
-    container.style.overflow = '';
-    
-    // Reset estilos inline do card
-    const card = container.querySelector('.card');
-    if (card) {
-        card.style.maxHeight = '';
-        card.style.borderRadius = '';
-        card.style.margin = '';
-        card.style.height = '';
-        card.style.overflowY = '';
-    }
-    
+
+    console.log('Classe system-active removida. CSS vai controlar o display.');
+
     // Reset to initial screen
     document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
     inicio.classList.add('ativa');
@@ -114,16 +62,14 @@ window.voltarParaTelaInicial = function() {
     // Limpa qualquer estado de autenticação ou acesso
     grupoAtual = "";
     isProfLogado = false;
-    
+
     // Garante que está no sistema
     const landing = document.querySelector('.netflix-landing');
     const container = document.querySelector('.container');
-    
+
     if (landing && container) {
         document.body.classList.add('system-active');
-        landing.style.display = 'none';
-        container.style.display = 'flex';
-        
+
         // Navega explicitamente para a tela inicial
         mostrarTela('inicio');
     }
@@ -179,7 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
         profHtml += `<div class="module-card" onclick="mostrarRegistros('${m.id}')"><div class="module-img" style="background-image: url('${m.img}');"></div><div class="module-title">${m.titulo}</div></div>`;
         alunoHtml += `<div class="module-card" onclick="abrirAtividade('${m.id}')"><div class="module-img" style="background-image: url('${m.img}');"></div><div class="module-title">${m.titulo}</div></div>`;
     });
-    
+
     // Verifica se os elementos existem antes de tentar preenchê-los
     const gridProf = document.getElementById("gridProf");
     const gridAluno = document.getElementById("gridAluno");
@@ -191,40 +137,43 @@ document.addEventListener("DOMContentLoaded", () => {
     if (senhaProfessor) {
         senhaProfessor.addEventListener("keypress", e => { if (e.key === "Enter") entrarProfessor(); });
     }
-    
+
     const nomeGrupo = document.getElementById("nomeGrupo");
     if (nomeGrupo) {
         nomeGrupo.addEventListener("keypress", e => { if (e.key === "Enter") entrarGrupo(); });
     }
-    
+
     const senhaGrupo = document.getElementById("senhaGrupo");
     if (senhaGrupo) {
         senhaGrupo.addEventListener("keypress", e => { if (e.key === "Enter") entrarGrupo(); });
     }
 
     // 2. VERIFICA EM QUAL TELA ESTÁVAMOS ANTES DE ATUALIZAR
-    let hashTela = window.location.hash.replace('#', '');
-    let telaDestino = 'inicio';
+    // Só verifica hash se estiver no sistema (body tem classe system-active)
+    if (document.body.classList.contains('system-active')) {
+        let hashTela = window.location.hash.replace('#', '');
+        let telaDestino = 'inicio';
 
-    if (hashTela && document.getElementById(hashTela)) {
-        // Se tentar acessar área de aluno sem grupo logado na sessão, joga pro login
-        if (hashTela.includes('pratica') || hashTela === 'escolhaGrupo' || hashTela === 'resultadoGrupo') {
-            telaDestino = grupoAtual ? hashTela : 'loginGrupo';
-        } 
-        // Se tentar acessar área do professor sem estar logado na sessão, joga pro login
-        else if (hashTela === 'menuProfessor' || hashTela === 'listaProfessor') {
-            telaDestino = isProfLogado ? hashTela : 'loginProfessor';
-        } else {
-            telaDestino = hashTela;
+        if (hashTela && document.getElementById(hashTela)) {
+            // Se tentar acessar área de aluno sem grupo logado na sessão, joga pro login
+            if (hashTela.includes('pratica') || hashTela === 'escolhaGrupo' || hashTela === 'resultadoGrupo') {
+                telaDestino = grupoAtual ? hashTela : 'loginGrupo';
+            }
+            // Se tentar acessar área do professor sem estar logado na sessão, joga pro login
+            else if (hashTela === 'menuProfessor' || hashTela === 'listaProfessor') {
+                telaDestino = isProfLogado ? hashTela : 'loginProfessor';
+            } else {
+                telaDestino = hashTela;
+            }
         }
-    }
 
-    // 3. ABRE A TELA CORRETA
-    if (telaDestino.includes('pratica')) {
-        let numeroPratica = telaDestino.replace('pratica', ''); // Pega o número da URL
-        abrirAtividade('Prática ' + numeroPratica);
-    } else {
-        mostrarTela(telaDestino, true);
+        // 3. ABRE A TELA CORRETA
+        if (telaDestino.includes('pratica')) {
+            let numeroPratica = telaDestino.replace('pratica', ''); // Pega o número da URL
+            abrirAtividade('Prática ' + numeroPratica);
+        } else {
+            mostrarTela(telaDestino, true);
+        }
     }
 
     if (isProfLogado) monitorarStatusEmTempoReal();
@@ -551,7 +500,8 @@ window.mostrarTela = function(id, vindoDoHistorico = false) {
         console.log('Display após delay:', window.getComputedStyle(tela).display);
     }, 100);
 
-    if (!vindoDoHistorico) {
+    // Só atualiza o histórico se não for uma tela de login (evita conflitos)
+    if (!vindoDoHistorico && id !== 'loginProfessor' && id !== 'loginGrupo') {
         window.history.pushState({ tela: id }, "", `#${id}`);
     }
 
