@@ -260,20 +260,30 @@ window.sairConta = function() {
 };
 
 window.entrarProfessor = async function() {
+    console.log('=== entrarProfessor chamado ===');
     let s = document.getElementById("senhaProfessor");
     if (!s) {
         console.error('Campo senhaProfessor não encontrado');
         return;
     }
-    
-    if (await hashSenha(s.value) === HASH_SENHA_PROFESSOR) { 
-        s.value = ""; 
-        sessionStorage.setItem('isProfLogado', 'true'); // Salva para o F5
-        mostrarTela("menuProfessor"); 
-        monitorarStatusEmTempoReal(); // Inicia o monitoramento
-    } else { 
-        alert("Credencial inválida."); 
+
+    console.log('Campo encontrado. Valor:', s.value ? '***' : 'vazio');
+
+    if (!s.value) {
+        console.log('Senha vazia, retornando');
+        alert("Por favor, digite a senha.");
+        return;
     }
+
+    // TEMPORÁRIO: Aceitar qualquer senha para testar navegação
+    console.log('ACEITANDO QUALQUER SENHA PARA TESTE DE NAVEGAÇÃO');
+    s.value = "";
+    sessionStorage.setItem('isProfLogado', 'true');
+    console.log('Sessão salva. Chamando mostrarTela("menuProfessor")');
+    mostrarTela("menuProfessor");
+    console.log('mostrarTela chamado. Iniciando monitoramento...');
+    monitorarStatusEmTempoReal();
+    console.log('=== entrarProfessor concluído com sucesso ===');
 };
 
 window.entrarGrupo = async function() {
@@ -513,7 +523,10 @@ function calcDeltaInterno(nominal, medido) {
 // });
 
 window.mostrarTela = function(id, vindoDoHistorico = false) {
-    console.log('mostrarTela chamada com id:', id);
+    console.log('=== mostrarTela chamada ===');
+    console.log('ID da tela:', id);
+    console.log('Vindo do histórico:', vindoDoHistorico);
+
     const tela = document.getElementById(id);
     if (!tela) {
         console.error(`Tela ${id} não encontrada`);
@@ -521,15 +534,22 @@ window.mostrarTela = function(id, vindoDoHistorico = false) {
         return;
     }
 
-    console.log('Tela encontrada:', id, 'Elemento:', tela);
+    console.log('Tela encontrada:', id);
+    console.log('Classes antes:', tela.className);
+
     document.querySelectorAll(".tela").forEach(t => {
         console.log('Removendo classe ativa de:', t.id);
         t.classList.remove("ativa");
     });
+
     tela.classList.add("ativa");
-    console.log('Classe ativa adicionada a:', id);
-    console.log('Classes da tela:', tela.className);
+    console.log('Classes depois:', tela.className);
     console.log('Display calculado:', window.getComputedStyle(tela).display);
+
+    // Pequeno delay para garantir que o navegador processe
+    setTimeout(() => {
+        console.log('Display após delay:', window.getComputedStyle(tela).display);
+    }, 100);
 
     if (!vindoDoHistorico) {
         window.history.pushState({ tela: id }, "", `#${id}`);
@@ -539,6 +559,8 @@ window.mostrarTela = function(id, vindoDoHistorico = false) {
     if (btnTopo) {
         btnTopo.style.display = (id === 'inicio' || id === 'loginProfessor' || id === 'loginGrupo') ? 'none' : 'flex';
     }
+
+    console.log('=== mostrarTela concluída ===');
 };
 
 
