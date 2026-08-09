@@ -3,27 +3,42 @@ console.log('Script carregado com sucesso');
 
 // Declarar as funções no escopo global explicitamente
 window.showSystem = function(targetScreen = 'inicio') {
-    console.log('showSystem chamado com:', targetScreen);
-
     const landing = document.querySelector('.netflix-landing');
     const container = document.querySelector('.container');
 
-    if (!landing || !container) {
-        console.error('Elementos necessários não encontrados', { landing, container });
-        return;
-    }
+    if (!landing || !container) return;
 
-    // Apenas adiciona a classe - CSS controla tudo
     document.body.classList.add('system-active');
 
-    console.log('Classe system-active adicionada. CSS vai controlar o display.');
+    landing.style.display = 'none';
+    landing.style.visibility = 'hidden';
+    landing.style.opacity = '0';
 
-    // Show the specific screen from the original system
+    container.style.display = 'flex';
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.right = '0';
+    container.style.bottom = '0';
+    container.style.width = '100vw';
+    container.style.height = '100vh';
+    container.style.zIndex = '9999';
+    container.style.background = 'var(--netflix-dark)';
+    container.style.padding = '0';
+    container.style.overflow = 'hidden';
+
+    const card = container.querySelector('.card');
+    if (card) {
+        card.style.maxHeight = '100vh';
+        card.style.borderRadius = '0';
+        card.style.margin = '0';
+        card.style.height = '100vh';
+        card.style.overflowY = 'auto';
+    }
+
     if (targetScreen !== 'inicio') {
-        console.log('Navegando para tela:', targetScreen);
         mostrarTela(targetScreen);
     } else {
-        console.log('Mostrando tela inicio');
         mostrarTela('inicio');
     }
 };
@@ -209,30 +224,22 @@ window.sairConta = function() {
 };
 
 window.entrarProfessor = async function() {
-    console.log('=== entrarProfessor chamado ===');
     let s = document.getElementById("senhaProfessor");
-    if (!s) {
-        console.error('Campo senhaProfessor não encontrado');
-        return;
-    }
-
-    console.log('Campo encontrado. Valor:', s.value ? '***' : 'vazio');
+    if (!s) return;
 
     if (!s.value) {
-        console.log('Senha vazia, retornando');
         alert("Por favor, digite a senha.");
         return;
     }
 
-    // TEMPORÁRIO: Aceitar qualquer senha para testar navegação
-    console.log('ACEITANDO QUALQUER SENHA PARA TESTE DE NAVEGAÇÃO');
-    s.value = "";
-    sessionStorage.setItem('isProfLogado', 'true');
-    console.log('Sessão salva. Chamando mostrarTela("menuProfessor")');
-    mostrarTela("menuProfessor");
-    console.log('mostrarTela chamado. Iniciando monitoramento...');
-    monitorarStatusEmTempoReal();
-    console.log('=== entrarProfessor concluído com sucesso ===');
+    if (await hashSenha(s.value) === HASH_SENHA_PROFESSOR) {
+        s.value = "";
+        sessionStorage.setItem('isProfLogado', 'true');
+        mostrarTela("menuProfessor");
+        monitorarStatusEmTempoReal();
+    } else {
+        alert("Credencial inválida.");
+    }
 };
 
 window.entrarGrupo = async function() {
@@ -444,63 +451,15 @@ function formatEng(val, unit = '') {
 function calcDeltaInterno(nominal, medido) {
     if (!nominal || nominal === 0) return 0;
     return (((Math.abs(medido) - Math.abs(nominal)) / Math.abs(nominal)) * 100);
-} // <-- A chave fecha AQUI
-
-    // Comentado temporariamente para testar navegação
-    // function voltarPagina() {
-    //     // Check if we're in the system and can go back
-    //     if (document.body.classList.contains('system-active')) {
-    //         // If we're at the initial screen, go back to landing
-    //         const inicioScreen = document.getElementById('inicio');
-    //         if (inicioScreen.classList.contains('ativa')) {
-    //             voltarParaLanding();
-    //         } else {
-    //             window.history.back();
-    //         }
-    //     } else {
-    //         window.history.back();
-    //     }
-    // }
-
-// Comentado temporariamente para testar navegação
-// window.addEventListener('popstate', function(event) {
-//     if (event.state && event.state.tela) {
-//         mostrarTela(event.state.tela, true);
-//     } else {
-//         mostrarTela('inicio', true);
-//     }
-// });
+}
 
 window.mostrarTela = function(id, vindoDoHistorico = false) {
-    console.log('=== mostrarTela chamada ===');
-    console.log('ID da tela:', id);
-    console.log('Vindo do histórico:', vindoDoHistorico);
-
     const tela = document.getElementById(id);
-    if (!tela) {
-        console.error(`Tela ${id} não encontrada`);
-        console.log('Telas disponíveis:', Array.from(document.querySelectorAll('.tela')).map(t => t.id));
-        return;
-    }
+    if (!tela) return;
 
-    console.log('Tela encontrada:', id);
-    console.log('Classes antes:', tela.className);
-
-    document.querySelectorAll(".tela").forEach(t => {
-        console.log('Removendo classe ativa de:', t.id);
-        t.classList.remove("ativa");
-    });
-
+    document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
     tela.classList.add("ativa");
-    console.log('Classes depois:', tela.className);
-    console.log('Display calculado:', window.getComputedStyle(tela).display);
 
-    // Pequeno delay para garantir que o navegador processe
-    setTimeout(() => {
-        console.log('Display após delay:', window.getComputedStyle(tela).display);
-    }, 100);
-
-    // Só atualiza o histórico se não for uma tela de login (evita conflitos)
     if (!vindoDoHistorico && id !== 'loginProfessor' && id !== 'loginGrupo') {
         window.history.pushState({ tela: id }, "", `#${id}`);
     }
@@ -509,8 +468,6 @@ window.mostrarTela = function(id, vindoDoHistorico = false) {
     if (btnTopo) {
         btnTopo.style.display = (id === 'inicio' || id === 'loginProfessor' || id === 'loginGrupo') ? 'none' : 'flex';
     }
-
-    console.log('=== mostrarTela concluída ===');
 };
 
 
