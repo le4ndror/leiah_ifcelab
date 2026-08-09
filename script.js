@@ -235,8 +235,7 @@ window.entrarProfessor = async function() {
     if (await hashSenha(s.value) === HASH_SENHA_PROFESSOR) {
         s.value = "";
         sessionStorage.setItem('isProfLogado', 'true');
-        mostrarTela("menuProfessor");
-        monitorarStatusEmTempoReal();
+        window.location.href = 'menu-professor.html';
     } else {
         alert("Credencial inválida.");
     }
@@ -277,11 +276,10 @@ db.ref('gruposIF/' + nome).once('value').then(snap => {
     if (!saved || saved === senhaHash || saved === senha) { 
         if(!saved || saved === senha) db.ref('gruposIF/' + nome).set(senhaHash); 
         
-        grupoAtual = nome; 
-        sessionStorage.setItem('grupoAtual', nome); // Salva para o F5
-        registrarPresencaOnline(nome); // Manda pro Prof que logou
-
-        mostrarTela("escolhaGrupo"); 
+        grupoAtual = nome;
+        sessionStorage.setItem('grupoAtual', nome);
+        registrarPresencaOnline(nome);
+        window.location.href = 'escolha-pratica.html'; 
     }
     else { alert("Senha incorreta."); }
     if(btn && btn.tagName === "BUTTON") { btn.innerText = txt; btn.disabled = false; }
