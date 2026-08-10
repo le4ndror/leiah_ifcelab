@@ -1,3 +1,54 @@
+// ================= SISTEMA SIMPLES SPA BASEADO NO ORIGINAL =================
+window.toggleFaq = function(element) {
+    const answer = element.nextElementSibling;
+    const icon = element.querySelector('.faq-icon');
+
+    if (answer && icon) {
+        answer.classList.toggle('open');
+        icon.textContent = answer.classList.contains('open') ? '×' : '+';
+    }
+};
+
+window.mostrarTela = function(id) {
+    document.body.classList.add('system-active');
+    document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
+    const tela = document.getElementById(id);
+    if (tela) tela.classList.add("ativa");
+};
+
+window.sairConta = function() {
+    if (grupoAtual !== "") {
+        db.ref('statusTurmaIF/' + grupoAtual).update({
+            status: 'Offline', timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+    }
+    document.body.classList.remove('is-test');
+    grupoAtual = "";
+    sessionStorage.removeItem('grupoAtual');
+    sessionStorage.removeItem('isTest');
+    sessionStorage.removeItem('isProfLogado');
+    document.body.classList.remove('system-active');
+    mostrarTela('inicio');
+};
+
+window.entrarProfessor = async function() {
+    let s = document.getElementById("senhaProfessor");
+    if (!s) return;
+
+    if (!s.value) {
+        alert("Por favor, digite a senha.");
+        return;
+    }
+
+    if (await hashSenha(s.value) === HASH_SENHA_PROFESSOR) {
+        s.value = "";
+        sessionStorage.setItem('isProfLogado', 'true');
+        mostrarTela("menuProfessor");
+    } else {
+        alert("Credencial inválida.");
+    }
+};
+
 // ================= CONFIGURAÇÃO FIREBASE =================
 const firebaseConfig = {
   apiKey: "AIzaSyBd8vchRcXzpknvszJikiFhiJz8eIg5nnY",
@@ -112,19 +163,32 @@ window.sairConta = function() {
 };
 
 window.entrarProfessor = async function() {
+    console.log('entrarProfessor chamado');
     let s = document.getElementById("senhaProfessor");
-    if (!s) return;
+    if (!s) {
+        console.error('Campo senhaProfessor não encontrado');
+        return;
+    }
+
+    console.log('Campo encontrado, valor:', s.value ? 'preenchido' : 'vazio');
 
     if (!s.value) {
         alert("Por favor, digite a senha.");
         return;
     }
 
-    if (await hashSenha(s.value) === HASH_SENHA_PROFESSOR) {
+    console.log('Calculando hash...');
+    let senhaHash = await hashSenha(s.value);
+    console.log('Hash calculado:', senhaHash);
+    console.log('Hash esperado:', HASH_SENHA_PROFESSOR);
+
+    if (senhaHash === HASH_SENHA_PROFESSOR) {
+        console.log('Senha correta! Navegando para menu-professor.html');
         s.value = "";
         sessionStorage.setItem('isProfLogado', 'true');
         window.location.href = 'menu-professor.html';
     } else {
+        console.log('Senha incorreta');
         alert("Credencial inválida.");
     }
 };
@@ -344,18 +408,34 @@ let praticasRenderizadas = { p1: false, p2: false, p3: false, p4: false };
 
 window.abrirAtividade = function(idModulo) {
     if (idModulo === "Prática 1") {
-        window.location.href = 'pratica1.html';
+        if (!praticasRenderizadas.p1) {
+            renderizarPratica1();
+            praticasRenderizadas.p1 = true;
+        }
+        mostrarTela('pratica1');
     }
     else if (idModulo === "Prática 2") {
-        window.location.href = 'pratica2.html';
+        if (!praticasRenderizadas.p2) {
+            renderizarPratica2();
+            praticasRenderizadas.p2 = true;
+        }
+        mostrarTela('pratica2');
     }
     else if (idModulo === "Prática 3") {
-        window.location.href = 'pratica3.html';
+        if (!praticasRenderizadas.p3) {
+            renderizarPratica3();
+            praticasRenderizadas.p3 = true;
+        }
+        mostrarTela('pratica3');
     }
     else if (idModulo === "Prática 4") {
-        window.location.href = 'pratica4.html';
+        if (!praticasRenderizadas.p4) {
+            renderizarPratica4();
+            praticasRenderizadas.p4 = true;
+        }
+        mostrarTela('pratica4');
     }
-}
+};
 
 // ================= COMPONENTES ATUALIZADOS PARA TECLADO DE CELULAR =================
 function UI_Row(idPrefix, title) {
@@ -437,7 +517,7 @@ window.enviarPratica1 = function() {
 
     let btnEl = document.getElementById("btnPratica1");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl){ btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl){ btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.renderizarPratica2 = function() {
@@ -475,7 +555,7 @@ window.enviarPratica2 = function() {
 
     let btnEl = document.getElementById("btnPratica2");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.renderizarPratica3 = function() {
@@ -507,7 +587,7 @@ window.enviarPratica3 = function() {
 
     let btnEl = document.getElementById("btnPratica3");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.renderizarPratica4 = function() {
@@ -577,24 +657,14 @@ window.enviarPratica4 = function() {
 
     let btnEl = document.getElementById("btnPratica4");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.mostrarRegistros = function(tipo) {
-    // Salva o tipo na sessionStorage para usar na nova página
-    sessionStorage.setItem('tipoRegistros', tipo);
-    window.location.href = 'lista-professor.html';
-};
-
-window.divulgarNota = function(id, tipo) { db.ref('registrosLabIF/' + id).update({ divulgado: true }).then(() => location.reload()); };
-window.apagarRegistro = function(id, tipo) { if (confirm("Confirma exclusão?")) { db.ref('registrosLabIF/' + id).remove().then(() => location.reload()); } };
-
-// Função para carregar registros na página lista-professor.html
-window.carregarRegistros = function() {
-    let tipo = sessionStorage.getItem('tipoRegistros') || 'Prática 1';
     document.getElementById("tituloListaProfessor").innerText = `Registros: ${tipo}`;
     let lista = document.getElementById("listaRegistros");
     lista.innerHTML = "<p>Buscando...</p>";
+    mostrarTela("listaProfessor");
 
     db.ref('registrosLabIF').once('value').then(snap => {
         let regs = [];
@@ -623,8 +693,14 @@ window.carregarRegistros = function() {
     });
 };
 
+window.divulgarNota = function(id, tipo) { db.ref('registrosLabIF/' + id).update({ divulgado: true }).then(() => mostrarRegistros(tipo)); };
+window.apagarRegistro = function(id, tipo) { if (confirm("Confirma exclusão?")) { db.ref('registrosLabIF/' + id).remove().then(() => mostrarRegistros(tipo)); } };
+
 window.mostrarResultadosGrupo = function() {
-    let lista = document.getElementById("listaGrupo"); lista.innerHTML = "<p>Buscando...</p>"; mostrarTela("resultadoGrupo");
+    let lista = document.getElementById("listaGrupo");
+    lista.innerHTML = "<p>Buscando...</p>";
+    mostrarTela("resultadoGrupo");
+
     db.ref('registrosLabIF').once('value').then(snap => {
         let regs = []; snap.forEach(c => { let d = c.val(); d.id = c.key; regs.push(d); }); window.dadosProfessor = regs; 
         lista.innerHTML = ""; let achou = false;
