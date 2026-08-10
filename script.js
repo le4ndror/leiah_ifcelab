@@ -1,55 +1,5 @@
-// ================= SISTEMA SIMPLES SPA BASEADO NO ORIGINAL =================
-window.toggleFaq = function(element) {
-    const answer = element.nextElementSibling;
-    const icon = element.querySelector('.faq-icon');
-
-    if (answer && icon) {
-        answer.classList.toggle('open');
-        icon.textContent = answer.classList.contains('open') ? '×' : '+';
-    }
-};
-
-window.mostrarTela = function(id) {
-    document.body.classList.add('system-active');
-    document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
-    const tela = document.getElementById(id);
-    if (tela) tela.classList.add("ativa");
-};
-
-window.sairConta = function() {
-    if (grupoAtual !== "") {
-        db.ref('statusTurmaIF/' + grupoAtual).update({
-            status: 'Offline', timestamp: firebase.database.ServerValue.TIMESTAMP
-        });
-    }
-    document.body.classList.remove('is-test');
-    grupoAtual = "";
-    sessionStorage.removeItem('grupoAtual');
-    sessionStorage.removeItem('isTest');
-    sessionStorage.removeItem('isProfLogado');
-    document.body.classList.remove('system-active');
-    mostrarTela('inicio');
-};
-
-window.entrarProfessor = async function() {
-    let s = document.getElementById("senhaProfessor");
-    if (!s) return;
-
-    if (!s.value) {
-        alert("Por favor, digite a senha.");
-        return;
-    }
-
-    if (await hashSenha(s.value) === HASH_SENHA_PROFESSOR) {
-        s.value = "";
-        sessionStorage.setItem('isProfLogado', 'true');
-        mostrarTela("menuProfessor");
-    } else {
-        alert("Credencial inválida.");
-    }
-};
-
-// ================= CONFIGURAÇÃO FIREBASE =================
+// Script está embutido no HTML original que funciona
+// Arquivo mantido para compatibilidade futura
 const firebaseConfig = {
   apiKey: "AIzaSyBd8vchRcXzpknvszJikiFhiJz8eIg5nnY",
   authDomain: "laboratorioif.firebaseapp.com",
