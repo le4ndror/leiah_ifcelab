@@ -1,95 +1,3 @@
-// ================= LANDING PAGE CONTROLS =================
-console.log('Script carregado com sucesso');
-
-// Declarar as funções no escopo global explicitamente
-window.showSystem = function(targetScreen = 'inicio') {
-    const landing = document.querySelector('.netflix-landing');
-    const container = document.querySelector('.container');
-
-    if (!landing || !container) return;
-
-    document.body.classList.add('system-active');
-
-    landing.style.display = 'none';
-    landing.style.visibility = 'hidden';
-    landing.style.opacity = '0';
-
-    container.style.display = 'flex';
-    container.style.position = 'fixed';
-    container.style.top = '0';
-    container.style.left = '0';
-    container.style.right = '0';
-    container.style.bottom = '0';
-    container.style.width = '100vw';
-    container.style.height = '100vh';
-    container.style.zIndex = '9999';
-    container.style.background = 'var(--netflix-dark)';
-    container.style.padding = '0';
-    container.style.overflow = 'hidden';
-
-    const card = container.querySelector('.card');
-    if (card) {
-        card.style.maxHeight = '100vh';
-        card.style.borderRadius = '0';
-        card.style.margin = '0';
-        card.style.height = '100vh';
-        card.style.overflowY = 'auto';
-    }
-
-    if (targetScreen !== 'inicio') {
-        mostrarTela(targetScreen);
-    } else {
-        mostrarTela('inicio');
-    }
-};
-
-window.voltarParaLanding = function() {
-    const landing = document.querySelector('.netflix-landing');
-    const container = document.querySelector('.container');
-    const inicio = document.getElementById('inicio');
-
-    if (!landing || !container || !inicio) {
-        console.error('Elementos necessários não encontrados');
-        return;
-    }
-
-    // Apenas remove a classe - CSS controla tudo
-    document.body.classList.remove('system-active');
-
-    console.log('Classe system-active removida. CSS vai controlar o display.');
-
-    // Reset to initial screen
-    document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
-    inicio.classList.add('ativa');
-};
-
-window.toggleFaq = function(element) {
-    const answer = element.nextElementSibling;
-    const icon = element.querySelector('.faq-icon');
-    
-    if (answer && icon) {
-        answer.classList.toggle('open');
-        icon.textContent = answer.classList.contains('open') ? '×' : '+';
-    }
-};
-
-window.voltarParaTelaInicial = function() {
-    // Limpa qualquer estado de autenticação ou acesso
-    grupoAtual = "";
-    isProfLogado = false;
-
-    // Garante que está no sistema
-    const landing = document.querySelector('.netflix-landing');
-    const container = document.querySelector('.container');
-
-    if (landing && container) {
-        document.body.classList.add('system-active');
-
-        // Navega explicitamente para a tela inicial
-        mostrarTela('inicio');
-    }
-};
-
 // ================= CONFIGURAÇÃO FIREBASE =================
 const firebaseConfig = {
   apiKey: "AIzaSyBd8vchRcXzpknvszJikiFhiJz8eIg5nnY",
@@ -167,6 +75,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isProfLogado && document.getElementById('listaStatusGrupos')) {
         monitorarStatusEmTempoReal();
     }
+
+    // Carregar registros se estiver na página lista-professor.html
+    if (document.getElementById('listaRegistros')) {
+        carregarRegistros();
+    }
 });
 
 window.sairConta = function() {
@@ -195,7 +108,7 @@ window.sairConta = function() {
     if(document.getElementById("infoP3")) document.getElementById("infoP3").value = "";
     if(document.getElementById("infoP4")) document.getElementById("infoP4").value = "";
 
-    voltarParaLanding();
+    window.location.href = 'index.html';
 };
 
 window.entrarProfessor = async function() {
@@ -426,26 +339,6 @@ function calcDeltaInterno(nominal, medido) {
     return (((Math.abs(medido) - Math.abs(nominal)) / Math.abs(nominal)) * 100);
 }
 
-window.mostrarTela = function(id, vindoDoHistorico = false) {
-    const tela = document.getElementById(id);
-    if (!tela) return;
-
-    document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
-    tela.classList.add("ativa");
-
-    if (!vindoDoHistorico && id !== 'loginProfessor' && id !== 'loginGrupo') {
-        window.history.pushState({ tela: id }, "", `#${id}`);
-    }
-
-    let btnTopo = document.getElementById("btnVoltarTopo");
-    if (btnTopo) {
-        btnTopo.style.display = (id === 'inicio' || id === 'loginProfessor' || id === 'loginGrupo') ? 'none' : 'flex';
-    }
-};
-
-
-
-
 // Variável para controlar se a prática já foi desenhada na tela
 let praticasRenderizadas = { p1: false, p2: false, p3: false, p4: false };
 
@@ -544,7 +437,7 @@ window.enviarPratica1 = function() {
 
     let btnEl = document.getElementById("btnPratica1");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl){ btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl){ btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.renderizarPratica2 = function() {
@@ -582,7 +475,7 @@ window.enviarPratica2 = function() {
 
     let btnEl = document.getElementById("btnPratica2");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.renderizarPratica3 = function() {
@@ -614,7 +507,7 @@ window.enviarPratica3 = function() {
 
     let btnEl = document.getElementById("btnPratica3");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.renderizarPratica4 = function() {
@@ -684,19 +577,40 @@ window.enviarPratica4 = function() {
 
     let btnEl = document.getElementById("btnPratica4");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.mostrarRegistros = function(tipo) {
+    // Salva o tipo na sessionStorage para usar na nova página
+    sessionStorage.setItem('tipoRegistros', tipo);
+    window.location.href = 'lista-professor.html';
+};
+
+window.divulgarNota = function(id, tipo) { db.ref('registrosLabIF/' + id).update({ divulgado: true }).then(() => location.reload()); };
+window.apagarRegistro = function(id, tipo) { if (confirm("Confirma exclusão?")) { db.ref('registrosLabIF/' + id).remove().then(() => location.reload()); } };
+
+// Função para carregar registros na página lista-professor.html
+window.carregarRegistros = function() {
+    let tipo = sessionStorage.getItem('tipoRegistros') || 'Prática 1';
     document.getElementById("tituloListaProfessor").innerText = `Registros: ${tipo}`;
-    let lista = document.getElementById("listaRegistros"); lista.innerHTML = "<p>Buscando...</p>";
-    mostrarTela("listaProfessor"); 
-    
+    let lista = document.getElementById("listaRegistros");
+    lista.innerHTML = "<p>Buscando...</p>";
+
     db.ref('registrosLabIF').once('value').then(snap => {
-        let regs = []; snap.forEach(c => { let d = c.val(); d.id = c.key; regs.push(d); }); window.dadosProfessor = regs; 
+        let regs = [];
+        snap.forEach(c => {
+            let d = c.val();
+            d.id = c.key;
+            regs.push(d);
+        });
+        window.dadosProfessor = regs;
         let filts = regs.filter(r => r.tipo === tipo);
-        if (filts.length === 0) return lista.innerHTML = "<p>Nenhum registro encontrado.</p>"; 
-        let gruposMap = {}; filts.forEach(r => { if(!gruposMap[r.grupo]) gruposMap[r.grupo] = []; gruposMap[r.grupo].push(r); });
+        if (filts.length === 0) return lista.innerHTML = "<p>Nenhum registro encontrado.</p>";
+        let gruposMap = {};
+        filts.forEach(r => {
+            if(!gruposMap[r.grupo]) gruposMap[r.grupo] = [];
+            gruposMap[r.grupo].push(r);
+        });
         let h = "";
         Object.keys(gruposMap).sort().forEach(g => {
             h += `<div style="background: white; border: 1px solid #ccc; border-radius: 8px; margin-top: 20px;"><h2 style="margin:0; padding:15px; background:#f0fdf4; border-bottom:1px solid #ccc;">Grupo: ${g}</h2><div style="padding: 15px;">`;
@@ -707,10 +621,7 @@ window.mostrarRegistros = function(tipo) {
         });
         lista.innerHTML = h;
     });
-}
-
-window.divulgarNota = function(id, tipo) { db.ref('registrosLabIF/' + id).update({ divulgado: true }).then(() => mostrarRegistros(tipo)); };
-window.apagarRegistro = function(id, tipo) { if (confirm("Confirma exclusão?")) { db.ref('registrosLabIF/' + id).remove().then(() => mostrarRegistros(tipo)); } };
+};
 
 window.mostrarResultadosGrupo = function() {
     let lista = document.getElementById("listaGrupo"); lista.innerHTML = "<p>Buscando...</p>"; mostrarTela("resultadoGrupo");
