@@ -163,35 +163,10 @@ document.addEventListener("DOMContentLoaded", () => {
         senhaGrupo.addEventListener("keypress", e => { if (e.key === "Enter") entrarGrupo(); });
     }
 
-    // 2. VERIFICA EM QUAL TELA ESTÁVAMOS ANTES DE ATUALIZAR
-    // Só verifica hash se estiver no sistema (body tem classe system-active)
-    if (document.body.classList.contains('system-active')) {
-        let hashTela = window.location.hash.replace('#', '');
-        let telaDestino = 'inicio';
-
-        if (hashTela && document.getElementById(hashTela)) {
-            // Se tentar acessar área de aluno sem grupo logado na sessão, joga pro login
-            if (hashTela.includes('pratica') || hashTela === 'escolhaGrupo' || hashTela === 'resultadoGrupo') {
-                telaDestino = grupoAtual ? hashTela : 'loginGrupo';
-            }
-            // Se tentar acessar área do professor sem estar logado na sessão, joga pro login
-            else if (hashTela === 'menuProfessor' || hashTela === 'listaProfessor') {
-                telaDestino = isProfLogado ? hashTela : 'loginProfessor';
-            } else {
-                telaDestino = hashTela;
-            }
-        }
-
-        // 3. ABRE A TELA CORRETA
-        if (telaDestino.includes('pratica')) {
-            let numeroPratica = telaDestino.replace('pratica', ''); // Pega o número da URL
-            abrirAtividade('Prática ' + numeroPratica);
-        } else {
-            mostrarTela(telaDestino, true);
-        }
+    // Monitoramento em tempo real se estiver logado como professor
+    if (isProfLogado && document.getElementById('listaStatusGrupos')) {
+        monitorarStatusEmTempoReal();
     }
-
-    if (isProfLogado) monitorarStatusEmTempoReal();
 });
 
 window.sairConta = function() {
@@ -259,10 +234,10 @@ if (nome === "testelw" && senhaHash === HASH_SENHA_TESTE) {
     grupoAtual = nome;
     sessionStorage.setItem('grupoAtual', nome);
     sessionStorage.setItem('isTest', 'true');
-    document.body.classList.add('is-test'); 
+    document.body.classList.add('is-test');
     registrarPresencaOnline(nome);
 
-    mostrarTela("escolhaGrupo");
+    window.location.href = 'escolha-pratica.html';
     return;
 }
 
@@ -475,33 +450,17 @@ window.mostrarTela = function(id, vindoDoHistorico = false) {
 let praticasRenderizadas = { p1: false, p2: false, p3: false, p4: false };
 
 window.abrirAtividade = function(idModulo) {
-    if (idModulo === "Prática 1") { 
-        if (!praticasRenderizadas.p1) {
-            renderizarPratica1(); 
-            praticasRenderizadas.p1 = true;
-        }
-        mostrarTela('pratica1'); 
-    } 
-    else if (idModulo === "Prática 2") { 
-        if (!praticasRenderizadas.p2) {
-            renderizarPratica2(); 
-            praticasRenderizadas.p2 = true;
-        }
-        mostrarTela('pratica2'); 
+    if (idModulo === "Prática 1") {
+        window.location.href = 'pratica1.html';
     }
-    else if (idModulo === "Prática 3") { 
-        if (!praticasRenderizadas.p3) {
-            renderizarPratica3(); 
-            praticasRenderizadas.p3 = true;
-        }
-        mostrarTela('pratica3'); 
+    else if (idModulo === "Prática 2") {
+        window.location.href = 'pratica2.html';
     }
-    else if (idModulo === "Prática 4") { 
-        if (!praticasRenderizadas.p4) {
-            renderizarPratica4(); 
-            praticasRenderizadas.p4 = true;
-        }
-        mostrarTela('pratica4'); 
+    else if (idModulo === "Prática 3") {
+        window.location.href = 'pratica3.html';
+    }
+    else if (idModulo === "Prática 4") {
+        window.location.href = 'pratica4.html';
     }
 }
 
