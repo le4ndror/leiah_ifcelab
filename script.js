@@ -163,32 +163,18 @@ document.addEventListener("DOMContentLoaded", () => {
         senhaGrupo.addEventListener("keypress", e => { if (e.key === "Enter") entrarGrupo(); });
     }
 
-    // 2. VERIFICA EM QUAL TELA ESTÁVAMOS ANTES DE ATUALIZAR
-    // Só verifica hash se estiver no sistema (body tem classe system-active)
-    if (document.body.classList.contains('system-active')) {
-        let hashTela = window.location.hash.replace('#', '');
-        let telaDestino = 'inicio';
-
-        if (hashTela && document.getElementById(hashTela)) {
-            // Se tentar acessar área de aluno sem grupo logado na sessão, joga pro login
-            if (hashTela.includes('pratica') || hashTela === 'escolhaGrupo' || hashTela === 'resultadoGrupo') {
-                telaDestino = grupoAtual ? hashTela : 'loginGrupo';
-            }
-            // Se tentar acessar área do professor sem estar logado na sessão, joga pro login
-            else if (hashTela === 'menuProfessor' || hashTela === 'listaProfessor') {
-                telaDestino = isProfLogado ? hashTela : 'loginProfessor';
-            } else {
-                telaDestino = hashTela;
-            }
-        }
-
-        // 3. ABRE A TELA CORRETA
-        if (telaDestino.includes('pratica')) {
-            let numeroPratica = telaDestino.replace('pratica', ''); // Pega o número da URL
-            abrirAtividade('Prática ' + numeroPratica);
-        } else {
-            mostrarTela(telaDestino, true);
-        }
+    // Inicializar práticas conforme a página atual
+    if (document.getElementById('p1_resistores')) {
+        renderizarPratica1();
+    }
+    if (document.getElementById('p2_resistores')) {
+        renderizarPratica2();
+    }
+    if (document.getElementById('p3_resistores')) {
+        renderizarPratica3();
+    }
+    if (document.getElementById('p4_resistores')) {
+        renderizarPratica4();
     }
 
     if (isProfLogado) monitorarStatusEmTempoReal();
@@ -220,7 +206,7 @@ window.sairConta = function() {
     if(document.getElementById("infoP3")) document.getElementById("infoP3").value = "";
     if(document.getElementById("infoP4")) document.getElementById("infoP4").value = "";
 
-    voltarParaLanding();
+    window.location.href = 'index.html';
 };
 
 window.entrarProfessor = async function() {
@@ -259,10 +245,10 @@ if (nome === "testelw" && senhaHash === HASH_SENHA_TESTE) {
     grupoAtual = nome;
     sessionStorage.setItem('grupoAtual', nome);
     sessionStorage.setItem('isTest', 'true');
-    document.body.classList.add('is-test'); 
+    document.body.classList.add('is-test');
     registrarPresencaOnline(nome);
 
-    mostrarTela("escolhaGrupo");
+    window.location.href = 'escolha-pratica.html';
     return;
 }
 
@@ -475,33 +461,17 @@ window.mostrarTela = function(id, vindoDoHistorico = false) {
 let praticasRenderizadas = { p1: false, p2: false, p3: false, p4: false };
 
 window.abrirAtividade = function(idModulo) {
-    if (idModulo === "Prática 1") { 
-        if (!praticasRenderizadas.p1) {
-            renderizarPratica1(); 
-            praticasRenderizadas.p1 = true;
-        }
-        mostrarTela('pratica1'); 
-    } 
-    else if (idModulo === "Prática 2") { 
-        if (!praticasRenderizadas.p2) {
-            renderizarPratica2(); 
-            praticasRenderizadas.p2 = true;
-        }
-        mostrarTela('pratica2'); 
+    if (idModulo === "Prática 1") {
+        window.location.href = 'pratica1.html';
     }
-    else if (idModulo === "Prática 3") { 
-        if (!praticasRenderizadas.p3) {
-            renderizarPratica3(); 
-            praticasRenderizadas.p3 = true;
-        }
-        mostrarTela('pratica3'); 
+    else if (idModulo === "Prática 2") {
+        window.location.href = 'pratica2.html';
     }
-    else if (idModulo === "Prática 4") { 
-        if (!praticasRenderizadas.p4) {
-            renderizarPratica4(); 
-            praticasRenderizadas.p4 = true;
-        }
-        mostrarTela('pratica4'); 
+    else if (idModulo === "Prática 3") {
+        window.location.href = 'pratica3.html';
+    }
+    else if (idModulo === "Prática 4") {
+        window.location.href = 'pratica4.html';
     }
 }
 
@@ -585,7 +555,7 @@ window.enviarPratica1 = function() {
 
     let btnEl = document.getElementById("btnPratica1");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl){ btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl){ btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.renderizarPratica2 = function() {
@@ -623,7 +593,7 @@ window.enviarPratica2 = function() {
 
     let btnEl = document.getElementById("btnPratica2");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.renderizarPratica3 = function() {
@@ -655,7 +625,7 @@ window.enviarPratica3 = function() {
 
     let btnEl = document.getElementById("btnPratica3");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.renderizarPratica4 = function() {
@@ -725,7 +695,7 @@ window.enviarPratica4 = function() {
 
     let btnEl = document.getElementById("btnPratica4");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.mostrarRegistros = function(tipo) {
