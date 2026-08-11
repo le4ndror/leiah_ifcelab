@@ -1524,8 +1524,16 @@ color: #fca5a5;
 
 /* Hide landing page when system is active */
 body.system-active .netflix-landing {
-display: none !important;
+display: none;
 }
+
+body.system-active .container {
+display: flex;
+}
+
+.tela { display: none; }
+.tela.ativa { display: block; animation: fadeIn 0.3s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 body.system-active .container {
 display: flex !important;

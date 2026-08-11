@@ -3,23 +3,17 @@ console.log('Script carregado com sucesso');
 
 // Declarar as funções no escopo global explicitamente
 window.showSystem = function(targetScreen = 'inicio') {
-    console.log('showSystem chamado com:', targetScreen);
-    
     const landing = document.querySelector('.netflix-landing');
     const container = document.querySelector('.container');
-    
-    if (!landing || !container) {
-        console.error('Elementos necessários não encontrados', { landing, container });
-        return;
-    }
-    
+
+    if (!landing || !container) return;
+
     document.body.classList.add('system-active');
-    
-    // Forçar estilos inline para garantir funcionamento
+
     landing.style.display = 'none';
     landing.style.visibility = 'hidden';
     landing.style.opacity = '0';
-    
+
     container.style.display = 'flex';
     container.style.position = 'fixed';
     container.style.top = '0';
@@ -32,7 +26,7 @@ window.showSystem = function(targetScreen = 'inicio') {
     container.style.background = 'var(--netflix-dark)';
     container.style.padding = '0';
     container.style.overflow = 'hidden';
-    
+
     const card = container.querySelector('.card');
     if (card) {
         card.style.maxHeight = '100vh';
@@ -41,15 +35,10 @@ window.showSystem = function(targetScreen = 'inicio') {
         card.style.height = '100vh';
         card.style.overflowY = 'auto';
     }
-    
-    console.log('Landing page ocultada, container exibido em tela cheia');
-    
-    // Show the specific screen from the original system
+
     if (targetScreen !== 'inicio') {
-        console.log('Navegando para tela:', targetScreen);
         mostrarTela(targetScreen);
     } else {
-        console.log('Mostrando tela inicio');
         mostrarTela('inicio');
     }
 };
@@ -58,43 +47,17 @@ window.voltarParaLanding = function() {
     const landing = document.querySelector('.netflix-landing');
     const container = document.querySelector('.container');
     const inicio = document.getElementById('inicio');
-    
+
     if (!landing || !container || !inicio) {
         console.error('Elementos necessários não encontrados');
         return;
     }
-    
+
+    // Apenas remove a classe - CSS controla tudo
     document.body.classList.remove('system-active');
-    
-    // Reset estilos inline da landing
-    landing.style.display = '';
-    landing.style.visibility = '';
-    landing.style.opacity = '';
-    
-    // Reset estilos inline do container
-    container.style.display = '';
-    container.style.position = '';
-    container.style.top = '';
-    container.style.left = '';
-    container.style.right = '';
-    container.style.bottom = '';
-    container.style.width = '';
-    container.style.height = '';
-    container.style.zIndex = '';
-    container.style.background = '';
-    container.style.padding = '';
-    container.style.overflow = '';
-    
-    // Reset estilos inline do card
-    const card = container.querySelector('.card');
-    if (card) {
-        card.style.maxHeight = '';
-        card.style.borderRadius = '';
-        card.style.margin = '';
-        card.style.height = '';
-        card.style.overflowY = '';
-    }
-    
+
+    console.log('Classe system-active removida. CSS vai controlar o display.');
+
     // Reset to initial screen
     document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
     inicio.classList.add('ativa');
@@ -114,16 +77,14 @@ window.voltarParaTelaInicial = function() {
     // Limpa qualquer estado de autenticação ou acesso
     grupoAtual = "";
     isProfLogado = false;
-    
+
     // Garante que está no sistema
     const landing = document.querySelector('.netflix-landing');
     const container = document.querySelector('.container');
-    
+
     if (landing && container) {
         document.body.classList.add('system-active');
-        landing.style.display = 'none';
-        container.style.display = 'flex';
-        
+
         // Navega explicitamente para a tela inicial
         mostrarTela('inicio');
     }
@@ -179,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
         profHtml += `<div class="module-card" onclick="mostrarRegistros('${m.id}')"><div class="module-img" style="background-image: url('${m.img}');"></div><div class="module-title">${m.titulo}</div></div>`;
         alunoHtml += `<div class="module-card" onclick="abrirAtividade('${m.id}')"><div class="module-img" style="background-image: url('${m.img}');"></div><div class="module-title">${m.titulo}</div></div>`;
     });
-    
+
     // Verifica se os elementos existem antes de tentar preenchê-los
     const gridProf = document.getElementById("gridProf");
     const gridAluno = document.getElementById("gridAluno");
@@ -191,40 +152,29 @@ document.addEventListener("DOMContentLoaded", () => {
     if (senhaProfessor) {
         senhaProfessor.addEventListener("keypress", e => { if (e.key === "Enter") entrarProfessor(); });
     }
-    
+
     const nomeGrupo = document.getElementById("nomeGrupo");
     if (nomeGrupo) {
         nomeGrupo.addEventListener("keypress", e => { if (e.key === "Enter") entrarGrupo(); });
     }
-    
+
     const senhaGrupo = document.getElementById("senhaGrupo");
     if (senhaGrupo) {
         senhaGrupo.addEventListener("keypress", e => { if (e.key === "Enter") entrarGrupo(); });
     }
 
-    // 2. VERIFICA EM QUAL TELA ESTÁVAMOS ANTES DE ATUALIZAR
-    let hashTela = window.location.hash.replace('#', '');
-    let telaDestino = 'inicio';
-
-    if (hashTela && document.getElementById(hashTela)) {
-        // Se tentar acessar área de aluno sem grupo logado na sessão, joga pro login
-        if (hashTela.includes('pratica') || hashTela === 'escolhaGrupo' || hashTela === 'resultadoGrupo') {
-            telaDestino = grupoAtual ? hashTela : 'loginGrupo';
-        } 
-        // Se tentar acessar área do professor sem estar logado na sessão, joga pro login
-        else if (hashTela === 'menuProfessor' || hashTela === 'listaProfessor') {
-            telaDestino = isProfLogado ? hashTela : 'loginProfessor';
-        } else {
-            telaDestino = hashTela;
-        }
+    // Inicializar práticas conforme a página atual
+    if (document.getElementById('p1_resistores')) {
+        renderizarPratica1();
     }
-
-    // 3. ABRE A TELA CORRETA
-    if (telaDestino.includes('pratica')) {
-        let numeroPratica = telaDestino.replace('pratica', ''); // Pega o número da URL
-        abrirAtividade('Prática ' + numeroPratica);
-    } else {
-        mostrarTela(telaDestino, true);
+    if (document.getElementById('p2_resistores')) {
+        renderizarPratica2();
+    }
+    if (document.getElementById('p3_resistores')) {
+        renderizarPratica3();
+    }
+    if (document.getElementById('p4_resistores')) {
+        renderizarPratica4();
     }
 
     if (isProfLogado) monitorarStatusEmTempoReal();
@@ -256,23 +206,24 @@ window.sairConta = function() {
     if(document.getElementById("infoP3")) document.getElementById("infoP3").value = "";
     if(document.getElementById("infoP4")) document.getElementById("infoP4").value = "";
 
-    voltarParaLanding();
+    window.location.href = 'index.html';
 };
 
 window.entrarProfessor = async function() {
     let s = document.getElementById("senhaProfessor");
-    if (!s) {
-        console.error('Campo senhaProfessor não encontrado');
+    if (!s) return;
+
+    if (!s.value) {
+        alert("Por favor, digite a senha.");
         return;
     }
-    
-    if (await hashSenha(s.value) === HASH_SENHA_PROFESSOR) { 
-        s.value = ""; 
-        sessionStorage.setItem('isProfLogado', 'true'); // Salva para o F5
-        mostrarTela("menuProfessor"); 
-        monitorarStatusEmTempoReal(); // Inicia o monitoramento
-    } else { 
-        alert("Credencial inválida."); 
+
+    if (await hashSenha(s.value) === HASH_SENHA_PROFESSOR) {
+        s.value = "";
+        sessionStorage.setItem('isProfLogado', 'true');
+        window.location.href = 'menu-professor.html';
+    } else {
+        alert("Credencial inválida.");
     }
 };
 
@@ -294,10 +245,10 @@ if (nome === "testelw" && senhaHash === HASH_SENHA_TESTE) {
     grupoAtual = nome;
     sessionStorage.setItem('grupoAtual', nome);
     sessionStorage.setItem('isTest', 'true');
-    document.body.classList.add('is-test'); 
+    document.body.classList.add('is-test');
     registrarPresencaOnline(nome);
 
-    mostrarTela("escolhaGrupo");
+    window.location.href = 'escolha-pratica.html';
     return;
 }
 
@@ -311,11 +262,10 @@ db.ref('gruposIF/' + nome).once('value').then(snap => {
     if (!saved || saved === senhaHash || saved === senha) { 
         if(!saved || saved === senha) db.ref('gruposIF/' + nome).set(senhaHash); 
         
-        grupoAtual = nome; 
-        sessionStorage.setItem('grupoAtual', nome); // Salva para o F5
-        registrarPresencaOnline(nome); // Manda pro Prof que logou
-
-        mostrarTela("escolhaGrupo"); 
+        grupoAtual = nome;
+        sessionStorage.setItem('grupoAtual', nome);
+        registrarPresencaOnline(nome);
+        window.location.href = 'escolha-pratica.html'; 
     }
     else { alert("Senha incorreta."); }
     if(btn && btn.tagName === "BUTTON") { btn.innerText = txt; btn.disabled = false; }
@@ -485,53 +435,16 @@ function formatEng(val, unit = '') {
 function calcDeltaInterno(nominal, medido) {
     if (!nominal || nominal === 0) return 0;
     return (((Math.abs(medido) - Math.abs(nominal)) / Math.abs(nominal)) * 100);
-} // <-- A chave fecha AQUI
-
-    // Comentado temporariamente para testar navegação
-    // function voltarPagina() {
-    //     // Check if we're in the system and can go back
-    //     if (document.body.classList.contains('system-active')) {
-    //         // If we're at the initial screen, go back to landing
-    //         const inicioScreen = document.getElementById('inicio');
-    //         if (inicioScreen.classList.contains('ativa')) {
-    //             voltarParaLanding();
-    //         } else {
-    //             window.history.back();
-    //         }
-    //     } else {
-    //         window.history.back();
-    //     }
-    // }
-
-// Comentado temporariamente para testar navegação
-// window.addEventListener('popstate', function(event) {
-//     if (event.state && event.state.tela) {
-//         mostrarTela(event.state.tela, true);
-//     } else {
-//         mostrarTela('inicio', true);
-//     }
-// });
+}
 
 window.mostrarTela = function(id, vindoDoHistorico = false) {
-    console.log('mostrarTela chamada com id:', id);
     const tela = document.getElementById(id);
-    if (!tela) {
-        console.error(`Tela ${id} não encontrada`);
-        console.log('Telas disponíveis:', Array.from(document.querySelectorAll('.tela')).map(t => t.id));
-        return;
-    }
+    if (!tela) return;
 
-    console.log('Tela encontrada:', id, 'Elemento:', tela);
-    document.querySelectorAll(".tela").forEach(t => {
-        console.log('Removendo classe ativa de:', t.id);
-        t.classList.remove("ativa");
-    });
+    document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
     tela.classList.add("ativa");
-    console.log('Classe ativa adicionada a:', id);
-    console.log('Classes da tela:', tela.className);
-    console.log('Display calculado:', window.getComputedStyle(tela).display);
 
-    if (!vindoDoHistorico) {
+    if (!vindoDoHistorico && id !== 'loginProfessor' && id !== 'loginGrupo') {
         window.history.pushState({ tela: id }, "", `#${id}`);
     }
 
@@ -548,33 +461,17 @@ window.mostrarTela = function(id, vindoDoHistorico = false) {
 let praticasRenderizadas = { p1: false, p2: false, p3: false, p4: false };
 
 window.abrirAtividade = function(idModulo) {
-    if (idModulo === "Prática 1") { 
-        if (!praticasRenderizadas.p1) {
-            renderizarPratica1(); 
-            praticasRenderizadas.p1 = true;
-        }
-        mostrarTela('pratica1'); 
-    } 
-    else if (idModulo === "Prática 2") { 
-        if (!praticasRenderizadas.p2) {
-            renderizarPratica2(); 
-            praticasRenderizadas.p2 = true;
-        }
-        mostrarTela('pratica2'); 
+    if (idModulo === "Prática 1") {
+        window.location.href = 'pratica1.html';
     }
-    else if (idModulo === "Prática 3") { 
-        if (!praticasRenderizadas.p3) {
-            renderizarPratica3(); 
-            praticasRenderizadas.p3 = true;
-        }
-        mostrarTela('pratica3'); 
+    else if (idModulo === "Prática 2") {
+        window.location.href = 'pratica2.html';
     }
-    else if (idModulo === "Prática 4") { 
-        if (!praticasRenderizadas.p4) {
-            renderizarPratica4(); 
-            praticasRenderizadas.p4 = true;
-        }
-        mostrarTela('pratica4'); 
+    else if (idModulo === "Prática 3") {
+        window.location.href = 'pratica3.html';
+    }
+    else if (idModulo === "Prática 4") {
+        window.location.href = 'pratica4.html';
     }
 }
 
@@ -658,7 +555,7 @@ window.enviarPratica1 = function() {
 
     let btnEl = document.getElementById("btnPratica1");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl){ btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl){ btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.renderizarPratica2 = function() {
@@ -696,7 +593,7 @@ window.enviarPratica2 = function() {
 
     let btnEl = document.getElementById("btnPratica2");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.renderizarPratica3 = function() {
@@ -728,7 +625,7 @@ window.enviarPratica3 = function() {
 
     let btnEl = document.getElementById("btnPratica3");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.renderizarPratica4 = function() {
@@ -798,7 +695,7 @@ window.enviarPratica4 = function() {
 
     let btnEl = document.getElementById("btnPratica4");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
-    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); mostrarTela("escolhaGrupo"); }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
+    db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
 }
 
 window.mostrarRegistros = function(tipo) {
