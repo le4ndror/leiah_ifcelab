@@ -230,13 +230,13 @@
                         <line x1="50" y1="60" x2="60" y2="60" />
                         <line x1="140" y1="60" x2="150" y2="60" />
                     </g>
-                    <g fill="rgba(249,115,22,0.6)" fontSize="4" fontFamily="monospace">
+                    <g fill="rgba(249,115,22,0.6)" fontSize="2" fontFamily="monospace">
                         <text x="10" y="20">SCORE</text>
-                        <text x="10" y="30" fill="#f97316" fontSize="8" fontWeight="bold">95%</text>
+                        <text x="10" y="35" fill="#f97316" fontSize="5" fontWeight="bold">95%</text>
                     </g>
-                    <rect x="10" y="75" width="40" height="25" rx="2" fill="rgba(249,115,22,0.06)" stroke="rgba(249,115,22,0.2)" stroke-width="0.5" />
-                    <text x="15" y="86" fill="rgba(249,115,22,0.5)" fontSize="3" fontFamily="monospace">RELATÓRIOS</text>
-                    <text x="15" y="95" fill="#f97316" fontSize="7" fontFamily="monospace" fontWeight="bold">128</text>
+                    <rect x="10" y="97" width="50" height="20" rx="2" fill="rgba(249,115,22,0.06)" stroke="rgba(249,115,22,0.2)" stroke-width="0.5" />
+                    <text x="60" y="94" fill="rgba(249,115,22,0.5)" fontSize="1" fontFamily="monospace" text-anchor="middle">RELATÓRIOS</text>
+                    <text x="35" y="112" fill="#f97316" fontSize="4" fontFamily="monospace" fontWeight="bold" text-anchor="middle">128</text>
                 </svg>
             </div>
         </div>
@@ -300,15 +300,15 @@
 function toggleFaq(element) {
     const answer = element.nextElementSibling;
     const icon = element.querySelector('.faq-icon');
-    const isActive = answer.style.display === 'block';
+    const isOpen = answer.classList.contains('open');
 
     // Close all FAQ answers
-    document.querySelectorAll('.faq-answer').forEach(a => a.style.display = 'none');
+    document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
     document.querySelectorAll('.faq-icon').forEach(i => i.textContent = '+');
 
-    // If wasn't active, open this one
-    if (!isActive) {
-        answer.style.display = 'block';
+    // If wasn't open, open this one
+    if (!isOpen) {
+        answer.classList.add('open');
         icon.textContent = '−';
     }
 }
