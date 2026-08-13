@@ -114,7 +114,7 @@ const HASH_SENHA_PROFESSOR = "b98fa8019f3a49b8e9db23e42215d4454689e09e9ddaa0e571
 const HASH_SENHA_TESTE = "20f3765880a5c269b747e1e906054a4b4a3a991259f1e16b5dde4742cec2319a";
 
 const modulosPraticas = [
-    { id: "Prática 1", titulo: "Prática 1: Associação de Resistores", img: "https://eletroagora.com.br/wp-content/uploads/2024/01/circuito-eletrico-eletroagora.png" },
+    { id: "Prática 1", titulo: "Prática 1: Associação de Resistores", img: "pra_1.jpeg?v=" + Date.now() },
     { id: "Prática 2", titulo: "Prática 2: Leis de Kirchhoff", img: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=400&q=80" },
     { id: "Prática 3", titulo: "Prática 3: Divisor de Tensão e Corrente", img: "https://static.todamateria.com.br/upload/ci/rc/circuito-eletrico-og.jpg?class=ogImageWide" },
     { id: "Prática 4", titulo: "Prática 4: Análise Nodal", img: "https://www.casadoeletricistars.com.br/fotos/1/287/Blog%20-%20Casa%20do%20Eletricista%20(56)(1).png" }
@@ -209,7 +209,9 @@ window.sairConta = function() {
     window.location.href = 'index.html';
 };
 
-window.entrarProfessor = async function() {
+window.entrarProfessor = async function(event) {
+    if (event) event.preventDefault();
+    
     let s = document.getElementById("senhaProfessor");
     if (!s) return;
 
@@ -227,7 +229,9 @@ window.entrarProfessor = async function() {
     }
 };
 
-window.entrarGrupo = async function() {
+window.entrarGrupo = async function(event) {
+    if (event) event.preventDefault();
+    
     let nomeEl = document.getElementById("nomeGrupo");
     let senhaEl = document.getElementById("senhaGrupo");
     
@@ -699,25 +703,8 @@ window.enviarPratica4 = function() {
 }
 
 window.mostrarRegistros = function(tipo) {
-    document.getElementById("tituloListaProfessor").innerText = `Registros: ${tipo}`;
-    let lista = document.getElementById("listaRegistros"); lista.innerHTML = "<p>Buscando...</p>";
-    mostrarTela("listaProfessor"); 
-    
-    db.ref('registrosLabIF').once('value').then(snap => {
-        let regs = []; snap.forEach(c => { let d = c.val(); d.id = c.key; regs.push(d); }); window.dadosProfessor = regs; 
-        let filts = regs.filter(r => r.tipo === tipo);
-        if (filts.length === 0) return lista.innerHTML = "<p>Nenhum registro encontrado.</p>"; 
-        let gruposMap = {}; filts.forEach(r => { if(!gruposMap[r.grupo]) gruposMap[r.grupo] = []; gruposMap[r.grupo].push(r); });
-        let h = "";
-        Object.keys(gruposMap).sort().forEach(g => {
-            h += `<div style="background: white; border: 1px solid #ccc; border-radius: 8px; margin-top: 20px;"><h2 style="margin:0; padding:15px; background:#f0fdf4; border-bottom:1px solid #ccc;">Grupo: ${g}</h2><div style="padding: 15px;">`;
-            gruposMap[g].forEach(r => {
-                h += `<div class="registro"><strong>Id:</strong> ${r.infoAtividade}<br><br><button onclick="gerarPDFCorrecao('${r.id}')" class="btn-secundario">📄 Ver Correção (PDF)</button><br>${!r.divulgado ? `<button onclick="divulgarNota('${r.id}', '${tipo}')" class="btn-secundario" style="margin-top:10px;">Liberar ao Aluno</button>` : `<span class="status-ok" style="margin-top:10px; display:inline-block">Avaliação Liberada ✔</span>`}<button onclick="apagarRegistro('${r.id}', '${tipo}')" class="btn-perigo" style="margin-top:10px; float:right;">Excluir</button><div style="clear:both"></div></div>`;
-            });
-            h += `</div></div>`;
-        });
-        lista.innerHTML = h;
-    });
+    sessionStorage.setItem('tipoPratica', tipo);
+    window.location.href = 'lista-professor.html';
 }
 
 window.divulgarNota = function(id, tipo) { db.ref('registrosLabIF/' + id).update({ divulgado: true }).then(() => mostrarRegistros(tipo)); };

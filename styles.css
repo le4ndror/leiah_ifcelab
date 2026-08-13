@@ -1187,6 +1187,30 @@ display: block !important;
 .registro strong { color: var(--text-main); font-weight: 600; }
 .status-ok { color: var(--success-color); font-weight: 600; }
 .info-box { background-color: #e0f2fe; color: #0369a1; padding: 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; border: 1px solid #bae6fd; }
+
+/* Ajuste para práticas com fundo claro - letras pretas */
+body.system-active .card .esconder-no-teste h2 {
+    color: #000000 !important;
+}
+
+body.system-active .card h1 {
+    color: #000000 !important;
+}
+
+body.system-active .card .info-box {
+    color: #0369a1;
+}
+
+body.system-active .card input,
+body.system-active .card select {
+    color: #000000;
+    background: #ffffff;
+}
+
+body.system-active .card strong {
+    color: #000000;
+}
+
 hr { border: 0; border-top: 1px solid var(--border-color); margin: 30px 0; }
 .flex-row { display: flex; gap: 10px; margin-top: 8px; align-items: center; }
 .col-4 { flex: 1; }
