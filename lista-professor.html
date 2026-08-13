@@ -9,6 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="script.js"></script>
     <link rel="stylesheet" href="css/lista-professor.css">
 </head>
 <body class="system-active">
@@ -32,101 +33,28 @@
 </div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBd8vchRcXzpknvszJikiFhiJz8eIg5nnY",
-  authDomain: "laboratorioif.firebaseapp.com",
-  databaseURL: "https://laboratorioif-default-rtdb.firebaseio.com",
-  projectId: "laboratorioif"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
 const tipoPratica = sessionStorage.getItem('tipoPratica') || 'Prática 1';
 document.getElementById("tituloListaProfessor").innerText = `Registros: ${tipoPratica}`;
 
-function mostrarRegistros() {
-    const lista = document.getElementById("listaRegistros");
-    lista.innerHTML = "<p>Buscando...</p>";
-
-    db.ref('registrosLabIF').once('value').then(snap => {
-        let regs = [];
-        snap.forEach(c => { 
-            let d = c.val(); 
-            d.id = c.key; 
-            regs.push(d); 
-        });
-        window.dadosProfessor = regs;
-        
-        let filts = regs.filter(r => r.tipo === tipoPratica);
-        if (filts.length === 0) {
-            return lista.innerHTML = "<p>Nenhum registro encontrado.</p>";
-        }
-        
-        let gruposMap = {};
-        filts.forEach(r => { 
-            if(!gruposMap[r.grupo]) gruposMap[r.grupo] = []; 
-            gruposMap[r.grupo].push(r); 
-        });
-        
-        let h = "";
-        Object.keys(gruposMap).sort().forEach(g => {
-            h += `<div class="grupo-card">
-                    <h2>Grupo: ${g}</h2>
-                    <div>`;
-            gruposMap[g].forEach(r => {
-                h += `<div class="registro">
-                        <strong>ID:</strong> ${r.infoAtividade}<br><br>
-                        <button onclick="gerarPDFCorrecao('${r.id}')" class="btn-secundario">📄 Ver Correção (PDF)</button><br>
-                        ${!r.divulgado ? 
-                            `<button onclick="divulgarNota('${r.id}', '${tipoPratica}')" class="btn-secundario" style="margin-top:10px;">Liberar ao Aluno</button>` : 
-                            `<span class="status-ok" style="margin-top:10px; display:inline-block">Avaliação Liberada ✔</span>`
-                        }
-                        <button onclick="apagarRegistro('${r.id}', '${tipoPratica}')" class="btn-perigo" style="margin-top:10px; float:right;">Excluir</button>
-                        <div style="clear:both"></div>
-                    </div>`;
-            });
-            h += `</div></div>`;
-        });
-        lista.innerHTML = h;
-    });
-}
-
-function divulgarNota(id, tipo) {
-    db.ref('registrosLabIF/' + id).update({ divulgado: true }).then(() => mostrarRegistros());
-}
-
-function apagarRegistro(id, tipo) {
-    if (confirm("Confirma exclusão?")) {
-        db.ref('registrosLabIF/' + id).remove().then(() => mostrarRegistros());
-    }
-}
-
-function gerarPDFCorrecao(id) {
-    const registro = window.dadosProfessor.find(r => r.id === id);
-    if (!registro) return alert("Registro não encontrado");
-    
-    const element = document.createElement('div');
-    element.innerHTML = `
-        <div style="padding: 20px; font-family: Arial, sans-serif;">
-            <h1>Correção - ${registro.tipo}</h1>
-            <p><strong>Grupo:</strong> ${registro.grupo}</p>
-            <p><strong>ID:</strong> ${registro.infoAtividade}</p>
-            <p><strong>Data:</strong> ${new Date(registro.timestamp).toLocaleString()}</p>
-            <hr>
-            <h2>Respostas do Aluno:</h2>
-            ${Object.entries(registro).filter(([k, v]) => k.startsWith('p') && typeof v === 'object').map(([k, v]) => `
-                <h3>${k.replace('p', 'Parte ')}:</h3>
-                ${Object.entries(v).map(([campo, valor]) => `<p><strong>${campo}:</strong> ${valor}</p>`).join('')}
-            `).join('')}
-        </div>
-    `;
-    
-    html2pdf().from(element).save(`correcao_${id}.pdf`);
-}
-
 // Carregar registros ao iniciar a página
-document.addEventListener('DOMContentLoaded', mostrarRegistros);
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Página carregada, verificando script.js...');
+    
+    // Verificar se script.js carregou
+    setTimeout(() => {
+        console.log('Verificando funções após delay...');
+        console.log('Função mostrarRegistrosScreen:', typeof window.mostrarRegistrosScreen);
+        console.log('Função gerarPDFCorrecao:', typeof window.gerarPDFCorrecao);
+        console.log('html2pdf disponível:', typeof html2pdf);
+        
+        if (typeof window.mostrarRegistrosScreen === 'function') {
+            window.mostrarRegistrosScreen();
+        } else {
+            console.error('Função mostrarRegistrosScreen não encontrada');
+            document.getElementById("listaRegistros").innerHTML = "<p>Erro ao carregar sistema. Verifique se script.js foi carregado.</p>";
+        }
+    }, 500);
+});
 </script>
 </body>
 </html>

@@ -67,5 +67,18 @@
     </script>
 
     <script src="script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Preencher o grid de práticas do aluno
+            const gridAluno = document.getElementById("gridAluno");
+            if (gridAluno && typeof modulosPraticas !== 'undefined') {
+                let alunoHtml = "";
+                modulosPraticas.forEach(m => {
+                    alunoHtml += `<div class="module-card" onclick="abrirAtividade('${m.id}')"><div class="module-img" style="background-image: url('${m.img}');"></div><div class="module-title">${m.titulo}</div></div>`;
+                });
+                gridAluno.innerHTML = alunoHtml;
+            }
+        });
+    </script>
 </body>
 </html>

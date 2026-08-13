@@ -725,60 +725,6 @@ window.mostrarResultadosGrupo = function() {
     });
 }
 
-function checkAcerto(nomA, gabNom, deltaA, gabDelta) {
-    let diffNom = Math.abs(Math.abs(nomA||0) - Math.abs(gabNom||0));
-    let limitCorretoNom = Math.abs(gabNom||0) * 0.002 + 0.05; 
-    let limitParcialNom = Math.abs(gabNom||0) * 0.05 + 0.1;   
-    
-    let diffDelta = Math.abs(Math.abs(deltaA||0) - Math.abs(gabDelta||0));
-    let limitCorretoDelta = 0.5; 
-    let limitParcialDelta = 1.5; 
-
-    let isCorretoNom = diffNom <= limitCorretoNom;
-    let isParcialNom = diffNom <= limitParcialNom;
-    let isCorretoDelta = diffDelta <= limitCorretoDelta;
-    let isParcialDelta = diffDelta <= limitParcialDelta;
-
-    if (isCorretoNom && isCorretoDelta) return '<span style="color:#059669; font-weight:bold;">✓ Correto</span>';
-    else if (isParcialNom && isParcialDelta) return '<span style="color:#ca8a04; font-weight:bold;">⚠ Parcialmente Incorreta</span>';
-    else return '<span style="color:#ef4444; font-weight:bold;">✗ Incorreto</span>';
-}
-
-function rowHtml(label, obj, unit) {
-    if(!obj) return '';
-    const stlGabarito = "background-color: #dcfce7; color: #065f46; font-weight: bold; border: 2px solid #10b981;";
-    let status = checkAcerto(obj.nomA, obj.gabNom, obj.deltaA, obj.gabDelta);
-    return `<tr>
-        <td><strong>${label}</strong></td>
-        <td style="${stlGabarito}">${formatEng(obj.gabNom, unit)}</td>
-        <td>${formatEng(obj.nomA, unit)}</td>
-        <td>${formatEng(obj.medA, unit)}<br><small>Escala: ${obj.escala||'-'}</small></td>
-        <td style="${stlGabarito}">${(obj.gabDelta||0).toFixed(2)}%</td>
-        <td>${(obj.deltaA||0)}%</td>
-        <td>${status}</td>
-    </tr>`;
-}
-
-function rowHtmlNominalOnly(label, obj, unit) {
-    if(!obj) return '';
-    const stlGabarito = "background-color: #dcfce7; color: #065f46; font-weight: bold; border: 2px solid #10b981;";
-    let diffNom = Math.abs(Math.abs(obj.nomA||0) - Math.abs(obj.gabNom||0));
-    let limitCorretoNom = Math.abs(obj.gabNom||0) * 0.002 + 0.05;
-    let limitParcialNom = Math.abs(obj.gabNom||0) * 0.05 + 0.1;
-    let status;
-
-    if (diffNom <= limitCorretoNom) status = '<span style="color:#059669; font-weight:bold;">✓ Correto</span>';
-    else if (diffNom <= limitParcialNom) status = '<span style="color:#ca8a04; font-weight:bold;">⚠ Parcialmente Incorreta</span>';
-    else status = '<span style="color:#ef4444; font-weight:bold;">✗ Incorreto</span>';
-
-    return `<tr>
-        <td><strong>${label}</strong></td>
-        <td style="${stlGabarito}">${formatEng(obj.gabNom, unit)}</td>
-        <td colspan="4">${formatEng(obj.nomA, unit)}</td>
-        <td>${status}</td>
-    </tr>`;
-}
-
 window.gerarPDFCorrecao = function(idRegistro) {
     let r = window.dadosProfessor.find(x => x.id === idRegistro);
     if(!r) return alert("Erro ao carregar dados.");
@@ -893,7 +839,61 @@ window.gerarPDFCorrecao = function(idRegistro) {
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true }, 
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-    }).from(htmlStr).save().then(() => console.log("PDF Gerado com sucesso")).catch(e => alert("Erro PDF"));
+    }).from(htmlStr).save().then(() => {
+        console.log("PDF Gerado com sucesso:", nomeArquivo);
+        alert("PDF gerado com sucesso!");
+    }).catch(e => {
+        console.error("Erro ao gerar PDF:", e);
+        alert("Erro ao gerar PDF: " + e.message);
+    });
+}
+
+window.mostrarRegistrosScreen = function() {
+    const tipoPratica = sessionStorage.getItem('tipoPratica') || 'Prática 1';
+    const lista = document.getElementById("listaRegistros");
+    lista.innerHTML = "<p>Buscando...</p>";
+
+    db.ref('registrosLabIF').once('value').then(snap => {
+        let regs = [];
+        snap.forEach(c => { 
+            let d = c.val(); 
+            d.id = c.key; 
+            regs.push(d); 
+        });
+        window.dadosProfessor = regs;
+        
+        let filts = regs.filter(r => r.tipo === tipoPratica);
+        if (filts.length === 0) {
+            return lista.innerHTML = "<p>Nenhum registro encontrado.</p>";
+        }
+        
+        let gruposMap = {};
+        filts.forEach(r => { 
+            if(!gruposMap[r.grupo]) gruposMap[r.grupo] = []; 
+            gruposMap[r.grupo].push(r); 
+        });
+        
+        let h = "";
+        Object.keys(gruposMap).sort().forEach(g => {
+            h += `<div class="grupo-card">
+                    <h2>Grupo: ${g}</h2>
+                    <div>`;
+            gruposMap[g].forEach(r => {
+                h += `<div class="registro">
+                        <strong>ID:</strong> ${r.infoAtividade}<br><br>
+                        <button onclick="gerarPDFCorrecao('${r.id}')" class="btn-secundario">📄 Ver Correção (PDF)</button><br>
+                        ${!r.divulgado ? 
+                            `<button onclick="divulgarNota('${r.id}', '${tipoPratica}')" class="btn-secundario" style="margin-top:10px;">Liberar ao Aluno</button>` : 
+                            `<span class="status-ok" style="margin-top:10px; display:inline-block">Avaliação Liberada ✔</span>`
+                        }
+                        <button onclick="apagarRegistro('${r.id}', '${tipoPratica}')" class="btn-perigo" style="margin-top:10px; float:right;">Excluir</button>
+                        <div style="clear:both"></div>
+                    </div>`;
+            });
+            h += `</div></div>`;
+        });
+        lista.innerHTML = h;
+    });
 }
 
 // ==========================================

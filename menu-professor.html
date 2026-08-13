@@ -77,5 +77,18 @@
     </script>
 
     <script src="script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Preencher o grid de práticas do professor
+            const gridProf = document.getElementById("gridProf");
+            if (gridProf && typeof modulosPraticas !== 'undefined') {
+                let profHtml = "";
+                modulosPraticas.forEach(m => {
+                    profHtml += `<div class="module-card" onclick="mostrarRegistros('${m.id}')"><div class="module-img" style="background-image: url('${m.img}');"></div><div class="module-title">${m.titulo}</div></div>`;
+                });
+                gridProf.innerHTML = profHtml;
+            }
+        });
+    </script>
 </body>
 </html>
