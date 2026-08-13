@@ -894,12 +894,39 @@ window.gerarPDFCorrecao = function(idRegistro) {
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true }, 
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-    }).from(htmlStr).save().then(() => {
-        console.log("PDF Gerado com sucesso:", nomeArquivo);
-        alert("PDF gerado com sucesso!");
+    }).from(htmlStr).save().then(() => console.log("PDF Gerado com sucesso")).catch(e => alert("Erro PDF"));
+}
+
+// Função de teste para verificar se html2pdf está funcionando
+window.testarPDF = function() {
+    console.log("Testando html2pdf...");
+    console.log("html2pdf disponível:", typeof html2pdf);
+    
+    if (typeof html2pdf === 'undefined') {
+        alert("ERRO: html2pdf não está carregado!");
+        return;
+    }
+    
+    let htmlTeste = `
+    <div style="padding: 20px; font-family: Arial, sans-serif;">
+        <h1>Teste de PDF</h1>
+        <p>Se você está lendo isso, o html2pdf está funcionando!</p>
+        <p>Data: ${new Date().toLocaleString()}</p>
+    </div>`;
+    
+    html2pdf().set({
+        margin: [10, 10, 10, 10], 
+        filename: 'teste.pdf', 
+        pagebreak: { mode: ['css', 'legacy'], avoid: 'tr' }, 
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true }, 
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(htmlTeste).save().then(() => {
+        console.log("PDF de teste gerado com sucesso");
+        alert("PDF de teste gerado com sucesso!");
     }).catch(e => {
-        console.error("Erro ao gerar PDF:", e);
-        alert("Erro ao gerar PDF: " + e.message);
+        console.error("Erro ao gerar PDF de teste:", e);
+        alert("Erro ao gerar PDF de teste: " + e.message);
     });
 }
 
