@@ -989,6 +989,25 @@ textarea[style*="background"],
 color: #000000 !important;
 }
 
+/* Classes específicas das práticas */
+.registro {
+color: #000000 !important;
+}
+
+.registro strong {
+color: #000000 !important;
+}
+
+.registro input {
+color: #000000 !important;
+background: #ffffff !important;
+}
+
+.registro select {
+color: #000000 !important;
+background: #ffffff !important;
+}
+
 button { 
 background-color: var(--ifce-green); 
 color: white; 
