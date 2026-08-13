@@ -725,6 +725,61 @@ window.mostrarResultadosGrupo = function() {
     });
 }
 
+// Funções auxiliares para geração de PDF
+function checkAcerto(nomA, gabNom, deltaA, gabDelta) {
+    let diffNom = Math.abs(Math.abs(nomA||0) - Math.abs(gabNom||0));
+    let limitCorretoNom = Math.abs(gabNom||0) * 0.002 + 0.05; 
+    let limitParcialNom = Math.abs(gabNom||0) * 0.05 + 0.1;   
+    
+    let diffDelta = Math.abs(Math.abs(deltaA||0) - Math.abs(gabDelta||0));
+    let limitCorretoDelta = 0.5; 
+    let limitParcialDelta = 1.5; 
+
+    let isCorretoNom = diffNom <= limitCorretoNom;
+    let isParcialNom = diffNom <= limitParcialNom;
+    let isCorretoDelta = diffDelta <= limitCorretoDelta;
+    let isParcialDelta = diffDelta <= limitParcialDelta;
+
+    if (isCorretoNom && isCorretoDelta) return '<span style="color:#059669; font-weight:bold;">✓ Correto</span>';
+    else if (isParcialNom && isParcialDelta) return '<span style="color:#ca8a04; font-weight:bold;">⚠ Parcialmente Incorreta</span>';
+    else return '<span style="color:#ef4444; font-weight:bold;">✗ Incorreto</span>';
+}
+
+function rowHtml(label, obj, unit) {
+    if(!obj) return '';
+    const stlGabarito = "background-color: #dcfce7; color: #065f46; font-weight: bold; border: 2px solid #10b981;";
+    let status = checkAcerto(obj.nomA, obj.gabNom, obj.deltaA, obj.gabDelta);
+    return `<tr>
+        <td><strong>${label}</strong></td>
+        <td style="${stlGabarito}">${formatEng(obj.gabNom, unit)}</td>
+        <td>${formatEng(obj.nomA, unit)}</td>
+        <td>${formatEng(obj.medA, unit)}<br><small>Escala: ${obj.escala||'-'}</small></td>
+        <td style="${stlGabarito}">${(obj.gabDelta||0).toFixed(2)}%</td>
+        <td>${(obj.deltaA||0)}%</td>
+        <td>${status}</td>
+    </tr>`;
+}
+
+function rowHtmlNominalOnly(label, obj, unit) {
+    if(!obj) return '';
+    const stlGabarito = "background-color: #dcfce7; color: #065f46; font-weight: bold; border: 2px solid #10b981;";
+    let diffNom = Math.abs(Math.abs(obj.nomA||0) - Math.abs(obj.gabNom||0));
+    let limitCorretoNom = Math.abs(obj.gabNom||0) * 0.002 + 0.05;
+    let limitParcialNom = Math.abs(obj.gabNom||0) * 0.05 + 0.1;
+    let status;
+
+    if (diffNom <= limitCorretoNom) status = '<span style="color:#059669; font-weight:bold;">✓ Correto</span>';
+    else if (diffNom <= limitParcialNom) status = '<span style="color:#ca8a04; font-weight:bold;">⚠ Parcialmente Incorreta</span>';
+    else status = '<span style="color:#ef4444; font-weight:bold;">✗ Incorreto</span>';
+
+    return `<tr>
+        <td><strong>${label}</strong></td>
+        <td style="${stlGabarito}">${formatEng(obj.gabNom, unit)}</td>
+        <td colspan="4">${formatEng(obj.nomA, unit)}</td>
+        <td>${status}</td>
+    </tr>`;
+}
+
 window.gerarPDFCorrecao = function(idRegistro) {
     let r = window.dadosProfessor.find(x => x.id === idRegistro);
     if(!r) return alert("Erro ao carregar dados.");

@@ -38,22 +38,14 @@ document.getElementById("tituloListaProfessor").innerText = `Registros: ${tipoPr
 
 // Carregar registros ao iniciar a página
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Página carregada, verificando script.js...');
+    console.log('Página carregada, iniciando carregamento de registros...');
     
-    // Verificar se script.js carregou
-    setTimeout(() => {
-        console.log('Verificando funções após delay...');
-        console.log('Função mostrarRegistrosScreen:', typeof window.mostrarRegistrosScreen);
-        console.log('Função gerarPDFCorrecao:', typeof window.gerarPDFCorrecao);
-        console.log('html2pdf disponível:', typeof html2pdf);
-        
-        if (typeof window.mostrarRegistrosScreen === 'function') {
-            window.mostrarRegistrosScreen();
-        } else {
-            console.error('Função mostrarRegistrosScreen não encontrada');
-            document.getElementById("listaRegistros").innerHTML = "<p>Erro ao carregar sistema. Verifique se script.js foi carregado.</p>";
-        }
-    }, 500);
+    if (typeof window.mostrarRegistrosScreen === 'function') {
+        window.mostrarRegistrosScreen();
+    } else {
+        console.error('Função mostrarRegistrosScreen não encontrada');
+        document.getElementById("listaRegistros").innerHTML = "<p>Erro ao carregar sistema. Verifique se script.js foi carregado.</p>";
+    }
 });
 </script>
 </body>
