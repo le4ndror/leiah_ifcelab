@@ -195,12 +195,14 @@ window.sairConta = function() {
     sessionStorage.removeItem('grupoAtual');
     sessionStorage.removeItem('isTest');
     sessionStorage.removeItem('isProfLogado');
+    sessionStorage.removeItem('tipoPratica');
 
+    // Limpa elementos de prática apenas se existirem (página de aluno)
     praticasRenderizadas = { p1: false, p2: false, p3: false, p4: false };
-    document.getElementById("p1_resistores").innerHTML = "";
-    document.getElementById("p2_resistores").innerHTML = "";
-    document.getElementById("p3_resistores").innerHTML = "";
-    document.getElementById("p4_resistores").innerHTML = "";
+    if(document.getElementById("p1_resistores")) document.getElementById("p1_resistores").innerHTML = "";
+    if(document.getElementById("p2_resistores")) document.getElementById("p2_resistores").innerHTML = "";
+    if(document.getElementById("p3_resistores")) document.getElementById("p3_resistores").innerHTML = "";
+    if(document.getElementById("p4_resistores")) document.getElementById("p4_resistores").innerHTML = "";
     if(document.getElementById("infoP1")) document.getElementById("infoP1").value = "";
     if(document.getElementById("infoP2")) document.getElementById("infoP2").value = "";
     if(document.getElementById("infoP3")) document.getElementById("infoP3").value = "";
@@ -285,6 +287,125 @@ function registrarPresencaOnline(nomeGrupo) {
     ref.set({ status: 'Online', timestamp: firebase.database.ServerValue.TIMESTAMP });
     // Se a internet do aluno cair ou ele fechar o navegador, o Firebase acusa Offline sozinho:
     ref.onDisconnect().update({ status: 'Offline', timestamp: firebase.database.ServerValue.TIMESTAMP });
+}
+
+// ================= FUNÇÃO DE ANÁLISE DE FOTO =================
+// Componente para upload de foto por questão
+function criarComponenteFoto(questaoId, descricao) {
+    return `
+    <div class="foto-questao-container" id="foto-container-${questaoId}">
+        <h4>📸 ${descricao}</h4>
+        <div class="foto-upload-area">
+            <div class="foto-input-wrapper">
+                <button class="btn-foto-upload">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    Carregar Foto
+                </button>
+                <input type="file" id="foto-${questaoId}" accept="image/*" onchange="previewFoto('${questaoId}')">
+            </div>
+            <img id="preview-${questaoId}" class="foto-preview" alt="Preview">
+            <button id="btn-analisar-${questaoId}" class="btn-analisar-foto" onclick="analisarFoto('${questaoId}')" disabled>
+                🔍 Analisar com IA
+            </button>
+        </div>
+        <div id="feedback-${questaoId}" class="foto-feedback"></div>
+    </div>`;
+}
+
+// Armazenar fotos e feedbacks globalmente
+window.fotosPratica = {};
+window.feedbacksPratica = {};
+
+// Preview da foto carregada
+window.previewFoto = function(questaoId) {
+    const input = document.getElementById(`foto-${questaoId}`);
+    const preview = document.getElementById(`preview-${questaoId}`);
+    const btnAnalisar = document.getElementById(`btn-analisar-${questaoId}`);
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.classList.add('has-image');
+            btnAnalisar.disabled = false;
+            
+            // Armazenar a foto em base64
+            window.fotosPratica[questaoId] = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+};
+
+// Analisar foto com IA
+window.analisarFoto = async function(questaoId) {
+    const feedback = document.getElementById(`feedback-${questaoId}`);
+    const fotoBase64 = window.fotosPratica[questaoId];
+    
+    if (!fotoBase64) return alert("Selecione uma foto primeiro!");
+    
+    // Mostrar status de análise
+    feedback.textContent = "Analisando a foto, aguarde...";
+    feedback.className = "foto-feedback show analisando";
+    
+    try {
+        // Converter para base64 limpo (sem data:image/...)
+        const base64Limpo = fotoBase64.split(',')[1];
+        
+        // Enviar para o servidor
+        const resposta = await fetch('/api/analisar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imagemBase64: base64Limpo })
+        });
+        
+        const resultado = await resposta.json();
+        
+        // Armazenar feedback
+        window.feedbacksPratica[questaoId] = resultado.feedback;
+        
+        // Mostrar resultado
+        feedback.textContent = resultado.feedback;
+        feedback.className = "foto-feedback show sucesso";
+        
+    } catch (erro) {
+        feedback.textContent = "Erro ao analisar foto: " + erro.message;
+        feedback.className = "foto-feedback show erro";
+    }
+};
+
+// Função original de envio de foto (mantida para compatibilidade)
+async function enviarFoto() {
+  const inputFoto = document.getElementById('foto-caderno');
+  const arquivo = inputFoto.files[0];
+
+  if (!arquivo) return alert("Selecione uma foto primeiro!");
+
+  // Mostra uma mensagem avisando que está processando
+  document.getElementById('feedback-resultado').innerText = "Analisando a foto, aguarde...";
+
+  // Converte a foto para formato Base64
+  const reader = new FileReader();
+  reader.readAsDataURL(arquivo);
+  
+  reader.onload = async () => {
+    const base64Limpo = reader.result.split(',')[1];
+
+    // Envia a foto para a rota /api/analisar do seu server.js
+    const resposta = await fetch('/api/analisar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imagemBase64: base64Limpo })
+    });
+
+    const resultado = await resposta.json();
+    
+    // Mostra o feedback da IA na tela
+    document.getElementById('feedback-resultado').innerText = resultado.feedback;
+  };
 }
 
 // ================= FUNÇÃO DE AUTOPREENCHIMENTO PARA TESTE =================
@@ -530,14 +651,22 @@ function getStr(id) { return document.getElementById(id).value || ""; }
 
 window.renderizarPratica1 = function() {
     renderResistoresUI(5, "", "p1_resistores");
-    let assocS = ""; for(let i=2; i<=5; i++) assocS += UI_Row(`s${i}`, `Req (Série R1 até R${i})`); document.getElementById("p1_serie").innerHTML = assocS;
-    let assocP = ""; for(let i=2; i<=5; i++) assocP += UI_Row(`p${i}`, `Req (Paralelo R1 até R${i})`); document.getElementById("p1_paralelo").innerHTML = assocP;
-    document.getElementById("p1_mista").innerHTML = UI_Row(`m`, `Req Misto (R1//(R2+R3)//(R4+R5))`);
+    
+    // Adicionar componente de foto para resistores
+    document.getElementById("p1_resistores").innerHTML += criarComponenteFoto("p1_resistores", "Foto: Definição dos 5 Resistores");
+    
+    let assocS = ""; for(let i=2; i<=5; i++) assocS += UI_Row(`s${i}`, `Req (Série R1 até R${i})`); 
+    document.getElementById("p1_serie").innerHTML = assocS + criarComponenteFoto("p1_serie", "Foto: Associação em Série");
+    
+    let assocP = ""; for(let i=2; i<=5; i++) assocP += UI_Row(`p${i}`, `Req (Paralelo R1 até R${i})`); 
+    document.getElementById("p1_paralelo").innerHTML = assocP + criarComponenteFoto("p1_paralelo", "Foto: Associação em Paralelo");
+    
+    document.getElementById("p1_mista").innerHTML = UI_Row(`m`, `Req Misto (R1//(R2+R3)//(R4+R5))`) + criarComponenteFoto("p1_mista", "Foto: Associação Mista");
 }
 
 window.enviarPratica1 = function() {
     let infoA = document.getElementById("infoP1").value.trim(); if (!infoA) return alert("Preencha a identificação.");
-    let sub = { grupo: grupoAtual, tipo: 'Prática 1', infoAtividade: infoA, divulgado: false, timestamp: firebase.database.ServerValue.TIMESTAMP, resistores: [], serie: [], paralelo: [], mista: {} };
+    let sub = { grupo: grupoAtual, tipo: 'Prática 1', infoAtividade: infoA, divulgado: false, timestamp: firebase.database.ServerValue.TIMESTAMP, resistores: [], serie: [], paralelo: [], mista: {}, fotos: {}, feedbacks: {} };
     let exactNominals = [];
 
     for(let i=1; i<=5; i++) {
@@ -557,6 +686,10 @@ window.enviarPratica1 = function() {
     let m_medA = getVal(`m_med`); let gabMisto = 1 / ( (1/(exactNominals[3]+exactNominals[4])) + (1/(exactNominals[1]+exactNominals[2])) + (1/exactNominals[0]) );
     sub.mista = { nomA: getVal(`m_nom`), medA: m_medA, deltaA: getVal(`m_delta`), escala: getStr(`m_escala`), gabNom: gabMisto, gabDelta: calcDeltaInterno(gabMisto, m_medA) };
 
+    // Adicionar fotos e feedbacks
+    sub.fotos = window.fotosPratica || {};
+    sub.feedbacks = window.feedbacksPratica || {};
+
     let btnEl = document.getElementById("btnPratica1");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
     db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl){ btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
@@ -564,14 +697,20 @@ window.enviarPratica1 = function() {
 
 window.renderizarPratica2 = function() {
     renderResistoresUI(3, "p2_", "p2_resistores");
-    document.getElementById("p2_serie").innerHTML = UI_Row('p2_s_req', 'Req (Série R1+R2+R3)') + UI_Row('p2_s_itotal', 'I Total (mA)') + UI_Row('p2_s_vtotal', 'Tensão Total da Fonte') + UI_Row('p2_s_v1', 'Tensão V1 (sobre R1)') + UI_Row('p2_s_v2', 'Tensão V2 (sobre R2)') + UI_Row('p2_s_v3', 'Tensão V3 (sobre R3)');
-    document.getElementById("p2_paralelo").innerHTML = UI_Row('p2_p_req', 'Req (Paralelo R1//R2//R3)') + UI_Row('p2_p_itotal', 'I Total 1ª Medição (mA)') + UI_Row('p2_p_vtotal', 'Tensão Total da Fonte') + UI_Row('p2_p_v1', 'Tensão V1 (sobre R1)') + UI_Row('p2_p_v2', 'Tensão V2 (sobre R2)') + UI_Row('p2_p_v3', 'Tensão V3 (sobre R3)') + UI_Row('p2_p_itotal2', 'I Total 2ª Medição (mA)') + UI_Row('p2_p_i1', 'Corrente I1 (mA)') + UI_Row('p2_p_i2', 'Corrente I2 (mA)') + UI_Row('p2_p_i23', 'Corrente I23 (mA)') + UI_Row('p2_p_i3', 'Corrente I3 (mA)');
-    document.getElementById("p2_misto").innerHTML = UI_Row('p2_m_req', 'Req Mista R1 + (R2//R3)') + UI_Row('p2_m_itotal', 'I Total 1ª Medição (mA)') + UI_Row('p2_m_vtotal', 'Tensão Total da Fonte (6.5V)') + UI_Row('p2_m_v1', 'Tensão V1 (sobre R1)') + UI_Row('p2_m_v2', 'Tensão V2 (sobre R2)') + UI_Row('p2_m_v3', 'Tensão V3 (sobre R3)') + UI_Row('p2_m_itotal2', 'I Total 2ª Medição (mA)') + UI_Row('p2_m_i1', 'Corrente I1 (mA)') + UI_Row('p2_m_i2', 'Corrente I2 (mA)') + UI_Row('p2_m_i3', 'Corrente I3 (mA)');
+    
+    // Adicionar componente de foto para resistores
+    document.getElementById("p2_resistores").innerHTML += criarComponenteFoto("p2_resistores", "Foto: Resistores Individuais");
+    
+    document.getElementById("p2_serie").innerHTML = UI_Row('p2_s_req', 'Req (Série R1+R2+R3)') + UI_Row('p2_s_itotal', 'I Total (mA)') + UI_Row('p2_s_vtotal', 'Tensão Total da Fonte') + UI_Row('p2_s_v1', 'Tensão V1 (sobre R1)') + UI_Row('p2_s_v2', 'Tensão V2 (sobre R2)') + UI_Row('p2_s_v3', 'Tensão V3 (sobre R3)') + criarComponenteFoto("p2_serie", "Foto: Circuito Série");
+    
+    document.getElementById("p2_paralelo").innerHTML = UI_Row('p2_p_req', 'Req (Paralelo R1//R2//R3)') + UI_Row('p2_p_itotal', 'I Total 1ª Medição (mA)') + UI_Row('p2_p_vtotal', 'Tensão Total da Fonte') + UI_Row('p2_p_v1', 'Tensão V1 (sobre R1)') + UI_Row('p2_p_v2', 'Tensão V2 (sobre R2)') + UI_Row('p2_p_v3', 'Tensão V3 (sobre R3)') + UI_Row('p2_p_itotal2', 'I Total 2ª Medição (mA)') + UI_Row('p2_p_i1', 'Corrente I1 (mA)') + UI_Row('p2_p_i2', 'Corrente I2 (mA)') + UI_Row('p2_p_i23', 'Corrente I23 (mA)') + UI_Row('p2_p_i3', 'Corrente I3 (mA)') + criarComponenteFoto("p2_paralelo", "Foto: Circuito Paralelo");
+    
+    document.getElementById("p2_misto").innerHTML = UI_Row('p2_m_req', 'Req Mista R1 + (R2//R3)') + UI_Row('p2_m_itotal', 'I Total 1ª Medição (mA)') + UI_Row('p2_m_vtotal', 'Tensão Total da Fonte (6.5V)') + UI_Row('p2_m_v1', 'Tensão V1 (sobre R1)') + UI_Row('p2_m_v2', 'Tensão V2 (sobre R2)') + UI_Row('p2_m_v3', 'Tensão V3 (sobre R3)') + UI_Row('p2_m_itotal2', 'I Total 2ª Medição (mA)') + UI_Row('p2_m_i1', 'Corrente I1 (mA)') + UI_Row('p2_m_i2', 'Corrente I2 (mA)') + UI_Row('p2_m_i3', 'Corrente I3 (mA)') + criarComponenteFoto("p2_misto", "Foto: Circuito Misto");
 }
 
 window.enviarPratica2 = function() {
     let infoA = document.getElementById("infoP2").value.trim(); if (!infoA) return alert("Preencha a identificação.");
-    let sub = { grupo: grupoAtual, tipo: 'Prática 2', infoAtividade: infoA, divulgado: false, timestamp: firebase.database.ServerValue.TIMESTAMP, resistores: [], serie: {}, paralelo: {}, misto: {} };
+    let sub = { grupo: grupoAtual, tipo: 'Prática 2', infoAtividade: infoA, divulgado: false, timestamp: firebase.database.ServerValue.TIMESTAMP, resistores: [], serie: {}, paralelo: {}, misto: {}, fotos: {}, feedbacks: {} };
     let R = [];
 
     for(let i=1; i<=3; i++) {
@@ -595,6 +734,10 @@ window.enviarPratica2 = function() {
     let mV1 = (mItot/1000)*r1; let mV23 = (mItot/1000)*mR23;
     sub.misto = { req: getM('req', mReq), itotal: getM('itotal', mItot), vtotal: getM('vtotal', 6.5), v1: getM('v1', mV1), v2: getM('v2', mV23), v3: getM('v3', mV23), itotal2: getM('itotal2', mItot), i1: getM('i1', mItot), i2: getM('i2', (mV23/r2)*1000), i3: getM('i3', (mV23/r3)*1000) };
 
+    // Adicionar fotos e feedbacks
+    sub.fotos = window.fotosPratica || {};
+    sub.feedbacks = window.feedbacksPratica || {};
+
     let btnEl = document.getElementById("btnPratica2");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
     db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
@@ -602,13 +745,18 @@ window.enviarPratica2 = function() {
 
 window.renderizarPratica3 = function() {
     renderResistoresUI(3, "p3_", "p3_resistores");
-    document.getElementById("p3_serie").innerHTML = UI_Row('p3_s_vtotal', 'Tensão Total da Fonte (V)') + UI_Row('p3_s_v1', 'Tensão V1 (sobre R1)') + UI_Row('p3_s_v2', 'Tensão V2 (sobre R2)') + UI_Row('p3_s_v3', 'Tensão V3 (sobre R3)');
-    document.getElementById("p3_paralelo").innerHTML = UI_Row('p3_p_itotal', 'I Total (mA)') + UI_Row('p3_p_i1', 'Corrente I1 (mA)') + UI_Row('p3_p_i2', 'Corrente I2 (mA)') + UI_Row('p3_p_i3', 'Corrente I3 (mA)');
+    
+    // Adicionar componente de foto para resistores
+    document.getElementById("p3_resistores").innerHTML += criarComponenteFoto("p3_resistores", "Foto: Resistores Individuais");
+    
+    document.getElementById("p3_serie").innerHTML = UI_Row('p3_s_vtotal', 'Tensão Total da Fonte (V)') + UI_Row('p3_s_v1', 'Tensão V1 (sobre R1)') + UI_Row('p3_s_v2', 'Tensão V2 (sobre R2)') + UI_Row('p3_s_v3', 'Tensão V3 (sobre R3)') + criarComponenteFoto("p3_serie", "Foto: Divisor de Tensão (Série)");
+    
+    document.getElementById("p3_paralelo").innerHTML = UI_Row('p3_p_itotal', 'I Total (mA)') + UI_Row('p3_p_i1', 'Corrente I1 (mA)') + UI_Row('p3_p_i2', 'Corrente I2 (mA)') + UI_Row('p3_p_i3', 'Corrente I3 (mA)') + criarComponenteFoto("p3_paralelo", "Foto: Divisor de Corrente (Paralelo)");
 }
 
 window.enviarPratica3 = function() {
     let infoA = document.getElementById("infoP3").value.trim(); if (!infoA) return alert("Preencha a identificação.");
-    let sub = { grupo: grupoAtual, tipo: 'Prática 3', infoAtividade: infoA, divulgado: false, timestamp: firebase.database.ServerValue.TIMESTAMP, resistores: [], serie: {}, paralelo: {} };
+    let sub = { grupo: grupoAtual, tipo: 'Prática 3', infoAtividade: infoA, divulgado: false, timestamp: firebase.database.ServerValue.TIMESTAMP, resistores: [], serie: {}, paralelo: {}, fotos: {}, feedbacks: {} };
     let R = [];
 
     for(let i=1; i<=3; i++) {
@@ -627,6 +775,10 @@ window.enviarPratica3 = function() {
     let pReq = 1/(1/r1 + 1/r2 + 1/r3); let iTot_mA = (5/pReq)*1000;
     sub.paralelo = { itotal: getO('p3_p_', 'itotal', iTot_mA), i1: getO('p3_p_', 'i1', iTot_mA * (pReq/r1)), i2: getO('p3_p_', 'i2', iTot_mA * (pReq/r2)), i3: getO('p3_p_', 'i3', iTot_mA * (pReq/r3)) };
 
+    // Adicionar fotos e feedbacks
+    sub.fotos = window.fotosPratica || {};
+    sub.feedbacks = window.feedbacksPratica || {};
+
     let btnEl = document.getElementById("btnPratica3");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
     db.ref('registrosLabIF').push(sub).then(() => { alert("Enviado com sucesso!"); window.location.href = 'escolha-pratica.html'; }).catch(err=>alert(err)).finally(() => { if(btnEl) { btnEl.innerText = "Submeter à Nuvem"; btnEl.disabled = false;} });
@@ -634,15 +786,18 @@ window.enviarPratica3 = function() {
 
 window.renderizarPratica4 = function() {
     renderResistoresUI(4, "p4_", "p4_resistores");
+    
+    // Adicionar componente de foto para resistores
+    document.getElementById("p4_resistores").innerHTML += criarComponenteFoto("p4_resistores", "Foto: Resistores Individuais");
 
     document.getElementById("p4_fontes").innerHTML = 
-        UI_Row('p4_e1', 'Tensão Fonte E1 (Medida)') + UI_Row('p4_e2', 'Tensão Fonte E2 (Medida)');
+        UI_Row('p4_e1', 'Tensão Fonte E1 (Medida)') + UI_Row('p4_e2', 'Tensão Fonte E2 (Medida)') + criarComponenteFoto("p4_fontes", "Foto: Fontes de Tensão");
 
     document.getElementById("p4_nos").innerHTML = 
-        UI_Row_OnlyNominal('p4_no_va', 'Tensão Nó A (Va)') + UI_Row_OnlyNominal('p4_no_vb', 'Tensão Nó B (Vb)');
+        UI_Row_OnlyNominal('p4_no_va', 'Tensão Nó A (Va)') + UI_Row_OnlyNominal('p4_no_vb', 'Tensão Nó B (Vb)') + criarComponenteFoto("p4_nos", "Foto: Tensões Nodais (Supernó)");
 
     document.getElementById("p4_vr").innerHTML = 
-        UI_Row('p4_vr_1', 'Tensão VR1') + UI_Row('p4_vr_2', 'Tensão VR2') + UI_Row('p4_vr_3', 'Tensão VR3') + UI_Row('p4_vr_4', 'Tensão VR4');
+        UI_Row('p4_vr_1', 'Tensão VR1') + UI_Row('p4_vr_2', 'Tensão VR2') + UI_Row('p4_vr_3', 'Tensão VR3') + UI_Row('p4_vr_4', 'Tensão VR4') + criarComponenteFoto("p4_vr", "Foto: Tensões nos Resistores");
 
     document.getElementById("p4_i").innerHTML = 
         UI_Row('p4_i_1', 'Corrente I1 (em R1 e E1) (mA)') + 
@@ -650,12 +805,12 @@ window.renderizarPratica4 = function() {
         UI_Row('p4_i_3', 'Corrente I3 (ramo E2, do - pro +) (mA)') + 
         UI_Row('p4_i_4', 'Corrente I4 (ramo E2, do + pro -) (mA)') + 
         UI_Row('p4_i_5', 'Corrente I5 (em R3 pro terra) (mA)') + 
-        UI_Row('p4_i_6', 'Corrente I6 (em R4 pro terra) (mA)');
+        UI_Row('p4_i_6', 'Corrente I6 (em R4 pro terra) (mA)') + criarComponenteFoto("p4_i", "Foto: Correntes");
 }
 
 window.enviarPratica4 = function() {
     let infoA = document.getElementById("infoP4").value.trim(); if (!infoA) return alert("Preencha a identificação.");
-    let sub = { grupo: grupoAtual, tipo: 'Prática 4', infoAtividade: infoA, divulgado: false, timestamp: firebase.database.ServerValue.TIMESTAMP, resistores: [], fontes: {}, nos: {}, v_res: {}, i_res: {} };
+    let sub = { grupo: grupoAtual, tipo: 'Prática 4', infoAtividade: infoA, divulgado: false, timestamp: firebase.database.ServerValue.TIMESTAMP, resistores: [], fontes: {}, nos: {}, v_res: {}, i_res: {}, fotos: {}, feedbacks: {} };
     let R = [];
 
     for(let i=1; i<=4; i++) {
@@ -696,6 +851,10 @@ window.enviarPratica4 = function() {
         i5: getO('p4_i_', '5', i5),
         i6: getO('p4_i_', '6', i6)
     };
+
+    // Adicionar fotos e feedbacks
+    sub.fotos = window.fotosPratica || {};
+    sub.feedbacks = window.feedbacksPratica || {};
 
     let btnEl = document.getElementById("btnPratica4");
     if(btnEl) { btnEl.innerText = "Salvando..."; btnEl.disabled = true; }
@@ -817,6 +976,24 @@ window.gerarPDFCorrecao = function(idRegistro) {
         });
     }
     htmlStr += `</table>`;
+    
+    // Adicionar fotos e feedbacks da IA
+    if(r.fotos && Object.keys(r.fotos).length > 0) {
+        htmlStr += `<h3 style="margin-top: 30px;">📸 Análise com IA - Fotos dos Cálculos</h3>`;
+        Object.keys(r.fotos).forEach(questaoId => {
+            let foto = r.fotos[questaoId];
+            let feedback = r.feedbacks && r.feedbacks[questaoId] ? r.feedbacks[questaoId] : "Não analisado";
+            
+            htmlStr += `
+            <div style="margin: 20px 0; padding: 15px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;">
+                <h4 style="margin: 0 0 10px 0; color: #10b981;">${questaoId}</h4>
+                <img src="${foto}" style="max-width: 300px; max-height: 200px; border: 2px solid #10b981; border-radius: 4px; margin: 10px 0;">
+                <div style="background: #dcfce7; padding: 10px; border-radius: 4px; border-left: 4px solid #10b981;">
+                    <strong>Feedback da IA:</strong> ${feedback}
+                </div>
+            </div>`;
+        });
+    }
 
     if (r.tipo === 'Prática 1') {
         htmlStr += tbHead("2. Associação em Série"); if (r.serie) r.serie.forEach(x => htmlStr += rowHtml(`R1 a R${x.qtd}`, x, 'Ω')); htmlStr += `</table>`;
