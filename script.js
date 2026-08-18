@@ -356,7 +356,7 @@ window.analisarFoto = async function(questaoId) {
         const base64Limpo = fotoBase64.split(',')[1];
         
         // Enviar para o servidor
-        const resposta = await fetch('/api/analisar', {
+        const resposta = await fetch('http://localhost:4000/api/analisar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ imagemBase64: base64Limpo })
@@ -395,7 +395,7 @@ async function enviarFoto() {
     const base64Limpo = reader.result.split(',')[1];
 
     // Envia a foto para a rota /api/analisar do seu server.js
-    const resposta = await fetch('/api/analisar', {
+    const resposta = await fetch('http://localhost:4000/api/analisar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ imagemBase64: base64Limpo })
