@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050505">
+    <link rel="manifest" href="manifest.json">
+    <title>Acesso do Aluno - IFCE LAB</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/login-aluno.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <main class="mercury-wrapper">
+        <svg class="svg-filter-hidden" aria-hidden="true"><defs><filter id="gooey"><feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur"/><feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 19 -9" result="goo"/><feComposite in="SourceGraphic" in2="goo" operator="atop"/></filter></defs></svg>
+        <div class="stage" id="stage" aria-hidden="true"></div>
+        <section class="auth-container">
+            <header class="header">
+                <span class="brand-id">IFCE LAB · ESTAÇÃO DE APRENDIZAGEM</span>
+                <h1>ACESSO<br>DO ALUNO</h1>
+                <p>Entre com os dados do seu grupo para iniciar as práticas.</p>
+            </header>
+            <form class="auth-form" autocomplete="on" onsubmit="entrarGrupo(event)">
+                <div class="form-group">
+                    <label for="nomeGrupo">Identificação do grupo</label>
+                    <div class="input-field">
+                        <input type="text" id="nomeGrupo" name="username" placeholder="Ex.: grupo-alpha" autocomplete="username" required>
+                        <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span class="input-glow" aria-hidden="true"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="senhaGrupo">Chave de acesso</label>
+                    <div class="password-field">
+                        <input type="password" id="senhaGrupo" name="password" placeholder="Digite sua senha" autocomplete="current-password" required>
+                        <button type="button" class="password-toggle" aria-label="Mostrar senha" aria-pressed="false" onclick="togglePassword()">
+                            <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                        <span class="input-glow" aria-hidden="true"></span>
+                    </div>
+                </div>
+                <div class="submit-wrap"><div class="mercury-drop" aria-hidden="true"></div><button type="submit" class="btn-base">Entrar na bancada</button></div>
+                <a class="footer-link" href="index.html">Voltar à página inicial</a>
+            </form>
+            <footer class="auth-status"><span></span> AMBIENTE DE PRÁTICAS INTERATIVAS</footer>
+        </section>
+        <aside class="access-aside" aria-label="Informações da plataforma">
+            <span class="aside-index">01 / ALUNO</span>
+            <div class="aside-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <p>APRENDA<br><strong>FAZENDO.</strong></p>
+            <small>Práticas de eletrônica · acompanhamento em tempo real</small>
+        </aside>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const stage = document.getElementById('stage');
+            const blobs = [];
+            for (let i = 0; i < 6; i++) {
+                const blob = document.createElement('div');
+                const size = Math.random() * 200 + 150;
+                blob.className = 'blob';
+                blob.style.width = `${size}px`;
+                blob.style.height = `${size}px`;
+                blob.style.left = `${Math.random() * 80 + 10}%`;
+                blob.style.top = `${Math.random() * 80 + 10}%`;
+                blob.style.animationDelay = `${Math.random() * -20}s`;
+                blob.style.animationDuration = `${Math.random() * 15 + 15}s`;
+                stage.appendChild(blob);
+                blobs.push(blob);
+            }
+            let frame = 0;
+            document.addEventListener('pointermove', event => {
+                if (frame) return;
+                frame = requestAnimationFrame(() => {
+                    const x = event.clientX / window.innerWidth;
+                    const y = event.clientY / window.innerHeight;
+                    blobs.forEach((blob, index) => {
+                        const speed = (index + 1) * 20;
+                        blob.style.marginLeft = `${x * speed}px`;
+                        blob.style.marginTop = `${y * speed}px`;
+                    });
+                    frame = 0;
+                });
+            }, { passive: true });
+        });
+        function togglePassword() {
+            const input = document.getElementById('senhaGrupo');
+            const button = document.querySelector('.password-toggle');
+            const showing = input.type === 'password';
+            input.type = showing ? 'text' : 'password';
+            button.setAttribute('aria-pressed', String(showing));
+            button.setAttribute('aria-label', showing ? 'Ocultar senha' : 'Mostrar senha');
+            document.getElementById('eyeIcon').innerHTML = showing
+                ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+                : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+        }
+    </script>
+</body>
+</html>
