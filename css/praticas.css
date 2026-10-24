@@ -1,123 +1,49 @@
-/* Estilos específicos para práticas (pratica1-4.html) */
+@import url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap");
+
+/* =========================================================
+   praticas.css — IFCE LAB (pratica1-4.html)
+   Formulário de laboratório: organizado, lúdico e escuro.
+   Só estilo: nenhum HTML foi alterado.
+   ========================================================= */
+
+:root {
+    --bg: #070b0a;
+    --surface: rgba(255, 255, 255, 0.045);
+    --surface-2: rgba(255, 255, 255, 0.08);
+    --line: rgba(255, 255, 255, 0.1);
+    --text: #eef6f1;
+    --dim: #93a89d;
+    --ink: #0c2b21;
+    --green: #10b981;
+    --green-soft: #34d399;
+    --accent: #f6c58f;
+    --danger: #f87171;
+
+    --c1: #f6c58f;  /* areia  */
+    --c2: #d3c6f6;  /* lilás  */
+    --c3: #c6e4a4;  /* sálvia */
+    --c4: #f4b3b0;  /* coral  */
+
+    /* usado nos títulos que têm cor inline no HTML */
+    --primary-color: #e4fff1;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
 body {
-    background: #141414;
-    color: #ffffff;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hanken Grotesk", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Componente de upload de foto por questão */
-.foto-questao-container {
-    margin: 20px 0;
-    padding: 15px;
-    background: #2a2a2a;
-    border-radius: 8px;
-    border: 1px solid #333;
-}
-
-.foto-questao-container h4 {
-    margin: 0 0 10px 0;
-    color: #10b981;
-    font-size: 14px;
-}
-
-.foto-upload-area {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.foto-input-wrapper {
-    position: relative;
-    overflow: hidden;
-    display: inline-block;
-}
-
-.foto-input-wrapper input[type="file"] {
-    position: absolute;
-    left: 0;
-    top: 0;
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-}
-
-.btn-foto-upload {
-    background: #10b981;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: background 0.3s;
-}
-
-.btn-foto-upload:hover {
-    background: #059669;
-}
-
-.btn-analisar-foto {
-    background: #3b82f6;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background 0.3s;
-}
-
-.btn-analisar-foto:hover {
-    background: #2563eb;
-}
-
-.btn-analisar-foto:disabled {
-    background: #6b7280;
-    cursor: not-allowed;
-}
-
-.foto-preview {
-    width: 80px;
-    height: 80px;
-    border-radius: 6px;
-    object-fit: cover;
-    border: 2px solid #10b981;
-    display: none;
-}
-
-.foto-preview.has-image {
-    display: block;
-}
-
-.foto-feedback {
-    margin-top: 10px;
-    padding: 10px;
-    background: #1f1f1f;
-    border-radius: 6px;
-    font-size: 13px;
-    display: none;
-}
-
-.foto-feedback.show {
-    display: block;
-}
-
-.foto-feedback.analisando {
-    color: #fbbf24;
-}
-
-.foto-feedback.sucesso {
-    color: #10b981;
-    border: 1px solid #10b981;
-}
-
-.foto-feedback.erro {
-    color: #ef4444;
-    border: 1px solid #ef4444;
-}
+/* =========================================================
+   Palco: tela cheia, rolagem na borda da tela
+   ========================================================= */
 
 body.system-active .container {
     display: flex !important;
@@ -129,21 +55,33 @@ body.system-active .container {
     width: 100vw;
     height: 100vh;
     z-index: 9999;
-    background: #141414;
     padding: 0;
-    overflow: hidden;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background:
+        radial-gradient(900px 480px at 8% -8%, rgba(16, 185, 129, 0.28), transparent 62%),
+        radial-gradient(700px 420px at 100% 12%, rgba(211, 198, 246, 0.12), transparent 60%),
+        var(--bg);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(52, 211, 153, 0.4) transparent;
 }
 
 body.system-active .card {
-    max-height: 100vh;
+    position: relative;
+    flex: 0 1 920px;
+    width: 100%;
+    max-width: 920px;
+    height: auto;
+    max-height: none;
+    margin: 0 auto;
+    padding: 88px 28px 64px;
     border-radius: 0;
-    margin: 0;
-    height: 100vh;
-    overflow-y: auto;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
 }
-
-.tela { display: none; }
-.ativa { display: block; }
 
 .container {
     max-width: 1200px;
@@ -152,169 +90,285 @@ body.system-active .card {
 }
 
 .card {
-    background: #1f1f1f;
+    background: transparent;
     border-radius: 12px;
     padding: 30px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
+
+.tela { display: none; }
+.ativa { display: block; }
+
+.esconder-no-teste { display: block; }
+
+/* =========================================================
+   Voltar (topo) e título
+   ========================================================= */
 
 .btn-voltar-topo {
     position: absolute;
-    top: 15px;
-    left: 10px;
-    padding: 6px 12px;
-    font-size: 0.85rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    color: #ffffff;
-    cursor: pointer;
-    display: flex;
+    top: 24px;
+    left: 24px;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
-    transition: background 0.2s;
-}
-
-.btn-voltar-topo:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.btn-voltar {
-    background: transparent;
-    border: 1px solid #4b5563;
-    color: #9ca3af;
-    padding: 12px 20px;
-    border-radius: 8px;
+    gap: 8px;
+    padding: 10px 18px;
+    font-family: inherit;
     font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--accent);
+    border: none;
+    border-radius: 999px;
     cursor: pointer;
-    transition: all 0.2s;
+    box-shadow: 0 10px 24px -10px rgba(246, 197, 143, 0.6);
+    transition: transform 0.2s, background 0.2s;
 }
 
-.btn-voltar:hover {
-    border-color: #ffffff;
-    color: #ffffff;
-}
+.btn-voltar-topo:hover { background: #ffd9ae; transform: translateX(-3px); }
 
 h1 {
-    color: #ffffff;
-    margin-bottom: 20px;
-    font-size: 28px;
+    margin: 0 0 28px;
+    font-size: clamp(30px, 6vw, 46px);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    color: #fff;
 }
 
-h2 {
-    color: #10b981;
-    margin-top: 30px;
-    margin-bottom: 15px;
-}
+/* =========================================================
+   Ficha de identificação (bancada / data)
+   ========================================================= */
 
 .input-destaque {
-    border: 2px solid #10b981;
-    background: rgba(16, 185, 129, 0.1);
-    font-weight: 500;
-    padding: 12px;
-    border-radius: 8px;
-    width: 100%;
-    color: #000000;
-}
-
-.esconder-no-teste {
     display: block;
-}
-
-.botoes-rodape {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
-}
-
-.btn-normal-submit {
-    background: #10b981;
-    color: white;
-    border: none;
-    padding: 14px 24px;
-    border-radius: 8px;
-    font-size: 15px;
+    width: 100%;
+    padding: 18px 20px;
+    font-family: inherit;
+    font-size: 16px;
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
+    color: #fff;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05));
+    border: 2px solid rgba(52, 211, 153, 0.55);
+    border-radius: 18px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
-.btn-normal-submit:hover {
-    background: #059669;
+.input-destaque::placeholder { color: rgba(228, 255, 241, 0.5); font-weight: 500; }
+
+.input-destaque:focus {
+    border-color: var(--green-soft);
+    box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.2);
 }
 
-.info-box {
-    background-color: #e0f2fe;
-    color: #0369a1;
-    padding: 16px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    font-size: 0.9rem;
-    border: 1px solid #bae6fd;
+/* =========================================================
+   Seções (1., 2., 3. …)
+   ========================================================= */
+
+h2 {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 44px 0 18px;
+    padding: 14px 20px;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--primary-color);
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(52, 211, 153, 0.2);
+    border-radius: 16px;
 }
 
-hr {
-    border: 0;
-    border-top: 1px solid #374151;
-    margin: 30px 0;
+h2::before {
+    content: "";
+    flex: none;
+    width: 4px;
+    height: 22px;
+    border-radius: 2px;
+    background: var(--green-soft);
 }
 
-/* Classes do sistema de práticas */
+/* =========================================================
+   Cards das questões (.registro) — numerados e coloridos
+   ========================================================= */
+
+.esconder-no-teste > div { counter-reset: q; }
+
 .registro {
-    background: #f9fafb;
-    padding: 20px;
+    --tone: var(--c1);
+    counter-increment: q;
+    position: relative;
     margin: 16px 0;
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
-    font-size: 0.95rem;
+    padding: 24px 24px 22px;
     text-align: left;
-    color: #000000;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--tone);
+    border-radius: 22px;
+    box-shadow: 0 22px 44px -30px rgba(0, 0, 0, 0.9);
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    animation: rise 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.registro:nth-child(4n + 1) { --tone: var(--c1); }
+.registro:nth-child(4n + 2) { --tone: var(--c2); }
+.registro:nth-child(4n + 3) { --tone: var(--c3); }
+.registro:nth-child(4n + 4) { --tone: var(--c4); }
+
+.registro:nth-child(2) { animation-delay: 0.05s; }
+.registro:nth-child(3) { animation-delay: 0.1s; }
+.registro:nth-child(4) { animation-delay: 0.15s; }
+.registro:nth-child(5) { animation-delay: 0.2s; }
+.registro:nth-child(6) { animation-delay: 0.25s; }
+
+.registro:focus-within {
+    transform: translateY(-2px);
+    border-color: var(--tone);
+    box-shadow: 0 0 0 1px var(--tone);
+}
+
+/* número da questão (discreto) */
+.registro::before {
+    content: counter(q);
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tone);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
 }
 
 .registro strong {
-    color: #000000;
-    font-weight: 600;
+    display: inline-block;
+    padding-right: 44px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
 }
 
-.registro input {
-    color: #000000;
-    background: #ffffff;
+.registro p,
+.registro span,
+.registro small { color: var(--dim); }
+
+.registro label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--dim);
+}
+
+/* =========================================================
+   Campos de preenchimento
+   ========================================================= */
+
+.registro input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+.registro select,
+.registro textarea {
+    width: 100%;
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    background: var(--surface-2);
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.registro input::placeholder,
+.registro textarea::placeholder { color: rgba(255, 255, 255, 0.34); }
+
+.registro input:hover,
+.registro select:hover,
+.registro textarea:hover { border-color: rgba(255, 255, 255, 0.22); }
+
+.registro input:focus,
+.registro select:focus,
+.registro textarea:focus {
+    background: rgba(255, 255, 255, 0.11);
+    border-color: var(--tone);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08);
 }
 
 .registro select {
-    color: #000000;
-    background: #ffffff;
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 40px;
+    cursor: pointer;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #d8f3e4 50%),
+        linear-gradient(135deg, #d8f3e4 50%, transparent 50%);
+    background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+}
+
+.registro select option { color: #fff; background: #14211c; }
+
+.registro input[type="checkbox"],
+.registro input[type="radio"] { accent-color: var(--tone); width: 18px; height: 18px; }
+
+.registro input[readonly],
+.registro input:disabled {
+    color: var(--dim);
+    background: rgba(255, 255, 255, 0.03);
+    border-style: dashed;
 }
 
 .flex-row {
     display: flex;
-    gap: 10px;
-    margin-top: 8px;
-    align-items: center;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+    margin-top: 12px;
 }
 
-.col-4 {
-    flex: 1;
-}
+.col-4 { flex: 1 1 140px; min-width: 0; }
+
+/* =========================================================
+   Resistor dinâmico (com brilho e terminais metálicos)
+   ========================================================= */
 
 .resistor-dinamico {
     position: relative;
     width: 250px;
     max-width: 100%;
-    height: 50px;
-    margin: 15px auto;
-    background: #e1c699;
-    border-radius: 8px;
-    border: 1px solid #c8a873;
+    height: 52px;
+    margin: 24px auto;
+    background: linear-gradient(180deg, #f3dfb6 0%, #e1c699 45%, #c9a566 100%);
+    border: 1px solid #b8955a;
+    border-radius: 26px;
+    box-shadow:
+        inset 0 3px 4px rgba(255, 255, 255, 0.55),
+        inset 0 -4px 6px rgba(120, 80, 20, 0.25),
+        0 14px 22px -10px rgba(0, 0, 0, 0.7);
 }
 
-.resistor-dinamico::before, .resistor-dinamico::after {
+.resistor-dinamico::before,
+.resistor-dinamico::after {
     content: "";
     position: absolute;
-    width: 50px;
-    height: 6px;
-    background: #9ca3af;
     top: 22px;
+    width: 50px;
+    height: 7px;
+    background: linear-gradient(180deg, #e5e7eb, #9ca3af 55%, #6b7280);
+    border-radius: 4px;
 }
 
 .resistor-dinamico::before { left: -50px; }
@@ -324,38 +378,524 @@ hr {
     position: absolute;
     width: 10%;
     height: 100%;
-    border: 1px solid rgba(0,0,0,0.1);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    box-shadow: inset 0 3px 3px rgba(255, 255, 255, 0.35), inset 0 -3px 4px rgba(0, 0, 0, 0.18);
 }
 
-/* Responsividade das práticas */
+/* =========================================================
+   Foto por questão (área de envio)
+   ========================================================= */
+
+.foto-questao-container {
+    margin: 22px 0 6px;
+    padding: 18px 20px;
+    background: rgba(16, 185, 129, 0.05);
+    border: 2px dashed rgba(52, 211, 153, 0.4);
+    border-radius: 20px;
+}
+
+.foto-questao-container h4 {
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--green-soft);
+}
+
+.foto-upload-area {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+}
+
+.foto-input-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    border-radius: 999px;
+}
+
+.foto-input-wrapper input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.btn-foto-upload,
+.btn-analisar-foto {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+}
+
+.btn-foto-upload {
+    background: linear-gradient(160deg, #14b585, #0b7d5b);
+}
+
+.btn-analisar-foto {
+    color: var(--ink);
+    background: linear-gradient(160deg, #e2d9fb, #c3b3f2);
+}
+
+.btn-foto-upload:hover,
+.btn-analisar-foto:hover { transform: translateY(-2px); filter: brightness(1.06); }
+
+.btn-analisar-foto:disabled {
+    color: #9ca3af;
+    background: #2b3330;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+    filter: none;
+}
+
+.foto-preview {
+    display: none;
+    width: 84px;
+    height: 84px;
+    object-fit: cover;
+    border-radius: 18px;
+    border: 3px solid var(--green-soft);
+}
+
+.foto-preview.has-image { display: block; }
+
+.foto-feedback {
+    display: none;
+    margin-top: 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+}
+
+.foto-feedback.show { display: block; }
+
+.foto-feedback.analisando { color: #fcd34d; background: rgba(251, 191, 36, 0.1); }
+.foto-feedback.sucesso { color: #6ee7b7; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.5); }
+.foto-feedback.erro { color: #fca5a5; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.5); }
+
+/* =========================================================
+   Enviar, instruções e rodapé
+   ========================================================= */
+
+.botoes-rodape {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 36px;
+}
+
+.btn-normal-submit {
+    min-width: 300px;
+    padding: 17px 32px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    background: #0f9f74;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.btn-normal-submit:hover { background: #12b585; transform: translateY(-2px); }
+.btn-normal-submit:active { transform: translateY(0) scale(0.98); }
+
+hr {
+    height: 1px;
+    margin: 44px 0 28px;
+    border: 0;
+    background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.45), transparent);
+}
+
+.info-box {
+    margin-bottom: 24px;
+    padding: 18px 22px;
+    font-size: 0.92rem;
+    color: #bfe6fb;
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-left: 5px solid #38bdf8;
+    border-radius: 18px;
+}
+
+.info-box strong { color: #fff; }
+
+.btn-voltar {
+    padding: 13px 22px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dim);
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.btn-voltar:hover { color: #fff; border-color: #fff; background: rgba(255, 255, 255, 0.05); }
+
+.logout-section { text-align: center; }
+
+.btn-logout {
+    padding: 10px 18px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--dim);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-logout:hover { color: var(--danger); }
+
+/* =========================================================
+   Animação e acessibilidade
+   ========================================================= */
+
+@keyframes rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+button:focus-visible,
+a:focus-visible { outline: 2px solid var(--green-soft); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+}
+
+/* =========================================================
+   Celular
+   ========================================================= */
+
 @media (max-width: 768px) {
-    .botoes-rodape {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .btn-normal-submit {
-        width: 100%;
-    }
-    
-    .flex-row {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .col-4 {
-        width: 100%;
-    }
-    
-    .card {
-        padding: 20px 16px;
-    }
-    
-    h1 {
-        font-size: 1.5rem;
-    }
-    
-    h2 {
-        font-size: 1.1rem;
-    }
+    body.system-active .card { padding: 80px 14px 48px; }
+
+    .btn-voltar-topo { top: 18px; left: 14px; padding: 9px 16px; }
+
+    h1 { font-size: 1.9rem; }
+    h2 { margin-top: 34px; padding: 12px 16px; font-size: 1.05rem; }
+
+    .registro { padding: 22px 16px 18px; }
+
+    .flex-row { flex-direction: column; align-items: stretch; gap: 10px; }
+    .col-4 { flex: none; width: 100%; }
+
+    .resistor-dinamico { width: 66%; max-width: 250px; }
+    .resistor-dinamico::before,
+    .resistor-dinamico::after { width: 30px; }
+    .resistor-dinamico::before { left: -30px; }
+    .resistor-dinamico::after { right: -30px; }
+
+    .botoes-rodape { flex-direction: column; gap: 8px; }
+    .btn-normal-submit { width: 100%; min-width: 0; }
+
+    .foto-upload-area { flex-direction: column; align-items: stretch; }
+    .foto-input-wrapper,
+    .btn-foto-upload,
+    .btn-analisar-foto { width: 100%; justify-content: center; }
+    .foto-preview { align-self: center; }
+}
+
+
+/* =========================================================
+   LISTAS DE ESCOLHA ANIMADAS  (precisa de selects-animados.js)
+   Tudo desenhado em CSS: seta, marca de seleção e bolinhas.
+   ========================================================= */
+
+.sel { position: relative; width: 100%; }
+
+/* o <select> original continua existindo, só fica escondido */
+.sel > select.sel-native {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.sel-btn {
+    all: unset;
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 44px 11px 14px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    background: var(--surface-2);
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.sel-btn:hover { border-color: rgba(255, 255, 255, 0.24); }
+
+.sel-btn:focus-visible,
+.sel[data-open] .sel-btn {
+    background: rgba(255, 255, 255, 0.11);
+    border-color: var(--tone, var(--green-soft));
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.07);
+}
+
+.sel-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.sel-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sel-btn[data-empty] .sel-label { color: rgba(255, 255, 255, 0.4); }
+
+/* seta: um quadrado com duas bordas, girado */
+.sel-btn::after {
+    content: "";
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid #d8f3e4;
+    border-bottom: 2px solid #d8f3e4;
+    transform: translateY(-75%) rotate(45deg);
+    transition: transform 0.35s cubic-bezier(0.34, 1.36, 0.5, 1);
+}
+
+.sel[data-open] .sel-btn::after { transform: translateY(-25%) rotate(225deg); }
+
+/* bolinha de cor (círculo + reflexo, só CSS) */
+.sel-dot {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), transparent 42%),
+        var(--c, #888);
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+/* ---- painel que abre ---- */
+.sel-list {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 8px);
+    z-index: 40;
+    max-height: 290px;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    overflow-y: auto;
+    background: #13201b;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.85);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+    transform-origin: 50% 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scaleY(0.82);
+    transition:
+        opacity 0.2s ease,
+        transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1),
+        visibility 0s linear 0.38s;
+}
+
+.sel[data-open] .sel-list {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay: 0s;
+}
+
+/* abre para cima quando não há espaço embaixo */
+.sel[data-up] .sel-list {
+    top: auto;
+    bottom: calc(100% + 8px);
+    transform-origin: 50% 100%;
+    transform: translateY(10px) scaleY(0.82);
+}
+.sel[data-up][data-open] .sel-list { transform: none; }
+
+/* cada opção entra em sequência */
+.sel-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    font-size: 15px;
+    color: #e7f3ec;
+    border-radius: 11px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.sel[data-open] .sel-item {
+    animation: selItem 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 30ms + 50ms);
+}
+
+@keyframes selItem {
+    from { opacity: 0; transform: translateY(-9px); }
+    to { opacity: 1; transform: none; }
+}
+
+.sel-item[data-active] { background: rgba(255, 255, 255, 0.09); }
+.sel-item[data-ph] { color: var(--dim); }
+.sel-item[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
+
+.sel-item[aria-selected="true"] { color: #fff; font-weight: 700; }
+
+/* marca de selecionado: um "L" girado (check), só bordas */
+.sel-item[aria-selected="true"]:not([data-ph])::after {
+    content: "";
+    margin-left: auto;
+    width: 6px;
+    height: 11px;
+    border-right: 2.5px solid var(--green-soft);
+    border-bottom: 2.5px solid var(--green-soft);
+    transform: rotate(40deg) translate(-2px, -2px);
+}
+
+/* ---- PALETA DE CORES do resistor (grade de amostras) ---- */
+.sel[data-grid] .sel-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: 8px;
+    width: max(100%, 300px);
+    max-width: min(380px, 86vw);
+    right: auto;
+    padding: 10px;
+    max-height: 340px;
+}
+
+.sel[data-grid][data-right] .sel-list { left: auto; right: 0; }
+
+.sel[data-grid] .sel-item {
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 6px 10px;
+    font-size: 12.5px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
+}
+
+.sel[data-grid] .sel-item:hover,
+.sel[data-grid] .sel-item[data-active] {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.22);
+}
+
+.sel[data-grid] .sel-dot {
+    width: 36px;
+    height: 36px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sel[data-grid] .sel-item:hover .sel-dot,
+.sel[data-grid] .sel-item[data-active] .sel-dot { transform: scale(1.18); }
+
+.sel[data-grid] .sel-item[data-ph] {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    padding: 8px;
+    background: none;
+    border-style: dashed;
+}
+
+.sel[data-grid] .sel-item[aria-selected="true"]:not([data-ph]) {
+    border-color: var(--green-soft);
+    background: rgba(52, 211, 153, 0.12);
+}
+
+/* no modo paleta, o check vai para o canto da amostra */
+.sel[data-grid] .sel-item[aria-selected="true"]:not([data-ph])::after {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    margin: 0;
+    width: 5px;
+    height: 9px;
+}
+
+/* amostras "pulam" ao abrir, uma depois da outra */
+.sel[data-grid][data-open] .sel-item {
+    animation: selPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: calc(var(--i, 0) * 38ms + 60ms);
+}
+
+@keyframes selPop {
+    0% { opacity: 0; transform: translateY(-10px) scale(0.55); }
+    100% { opacity: 1; transform: none; }
+}
+
+/* o card com a lista aberta precisa ficar por cima dos outros */
+.registro.sel-raise { z-index: 30; }
+
+/* =========================================================
+   FAIXAS DO RESISTOR: animam ao aparecer e ao trocar de cor
+   ========================================================= */
+
+.faixa-dinamica {
+    transform-origin: 50% 50%;
+    transition: background-color 0.5s ease, filter 0.3s ease;
+    animation: faixaIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.faixa-dinamica:nth-child(2) { animation-delay: 0.06s; }
+.faixa-dinamica:nth-child(3) { animation-delay: 0.12s; }
+.faixa-dinamica:nth-child(4) { animation-delay: 0.18s; }
+.faixa-dinamica:nth-child(5) { animation-delay: 0.24s; }
+.faixa-dinamica:nth-child(6) { animation-delay: 0.3s; }
+
+@keyframes faixaIn {
+    0% { opacity: 0; transform: scaleY(0); }
+    60% { opacity: 1; transform: scaleY(1.14); }
+    100% { opacity: 1; transform: scaleY(1); }
+}
+
+.resistor-dinamico { transition: transform 0.3s ease; }
+.resistor-dinamico:hover { transform: translateY(-2px); }
+
+@media (max-width: 768px) {
+    .sel[data-grid] .sel-list { width: 100%; max-width: none; right: 0; }
 }
